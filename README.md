@@ -1,3 +1,3 @@
-# SimDPS - An inference method for inpainting long gaps of musical audio using Diffusion and Flow Matching
+# SimDPS - A Diffusion-based inference method for inpainting long gaps of musical audio
 
 Webpage: https://s-turland.github.io/SimDPS/
