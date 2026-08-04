@@ -139,14 +139,11 @@
       <div class="content has-text-justified">
         <p>
           Six excerpts of varying genre were taken from the MUSDB18-HQ test split and assessed by
-          23 listeners in a multi-stimulus test using webMUSHRA. The masked excerpt was
+          23 listeners in a multi-stimulus test using webMUSHRA. All diffusion-based reconstructions use the ACE-Step
+          Latent autoencoder, run without prompts or other conditioning inputs. The masked excerpt was
           given as the reference for the surrounding musical context, and listeners rated how
           plausible each reconstruction sounded within that context. Excerpts are 15&nbsp;s long
           with a 5-s gap; the stimuli below are the files used in the test.
-        </p>
-        <p>
-          Audio is fetched on the first click. All conditions share a single transport, so
-          switching between them does not interrupt playback.
         </p>
       </div>
 
@@ -171,8 +168,7 @@
           The protocol was repeated with a waveform-domain prior, an MR-CQTdiff model trained on
           MAESTRO at 44.1&nbsp;kHz. Each 6-s piano excerpt contains a 2-s central gap, and Linear
           Predictive Coding (LPC) serves as the low anchor. SimDPS-Strict and SimDPS-Relaxed
-          differ in their guidance strength.
-          <span class="nowrap">&omega;<sub>X&#771;</sub></span>, 0.15 and 0.04 respectively.
+          differ in the strength of the similarity guidance applied at inference time.
         </p>
       </div>
 
@@ -196,8 +192,7 @@
         <p>
           Additional latent-domain reconstructions of 15-s MUSDB18-HQ excerpts, each with a 5-s gap
           placed at random within the interior of the segment. Retrieval is restricted to the
-          remainder of the same song, outside the masked interval. All conditions use the ACE-Step
-          autoencoder, run without prompts or other conditioning inputs.
+          remainder of the same song, outside the masked interval. 
         </p>
       </div>
 
