@@ -1,0 +1,1423 @@
+
+% -----------------------------------------------
+% Template for ISMIR Papers
+% 2026 version, based on previous ISMIR templates
+
+% Requirements :
+% * 6+n page length maximum
+% * 10MB maximum file size
+% * Copyright note must appear in the bottom left corner of first page
+% * Clearer statement about citing own work in anonymized submission
+% (see conference website for additional details)
+% -----------------------------------------------
+
+\documentclass{article}
+\usepackage[T1]{fontenc}
+\usepackage{lipsum}
+\usepackage{microtype}
+\usepackage[utf8]{inputenc}
+\usepackage{ismir} % Remove the "submission" option for camera-ready version
+%\usepackage{ismir} % Remove the "submission" option for camera-ready version
+\usepackage{amsmath,cite,url}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{booktabs} 
+
+\usepackage{amssymb}
+\usepackage{algorithm} 
+\usepackage[noend]{algpseudocode}
+
+%\usepackage{titlesec}
+%\titlespacing{\section}{0pt}{6pt}{3pt}
+%\titlespacing{\subsection}{0pt}{3.5pt}{2.5pt}
+
+\setlength{\abovedisplayskip}{4pt}
+\setlength{\belowdisplayskip}{4pt}
+
+
+
+\usepackage{tikz}
+
+
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, calc}
+
+
+\usepackage{xcolor}
+
+
+\usepackage[nolist]{acronym}
+\begin{acronym}
+\acro{stft}[STFT]{Short-Time Fourier Transform}
+\acro{istft}[iSTFT]{Inverse Short-Time Fourier Transform}
+\acro{dnn}[DNN]{deep neural network}
+\acro{pesq}[PESQ]{Perceptual Evaluation of Speech Quality}
+\acro{polqa}[POLQA]{perceptual objectve listening quality analysis}
+\acro{wpe}[WPE]{weighted prediction error}
+\acro{psd}[PSD]{power spectral density}
+\acro{rir}[RIR]{room impulse response}
+\acro{hrir}[HRIR]{head-related impulse response}
+\acro{brir}[BRIR]{binaural room impulse response}
+\acro{hrtf}[HRTF]{head-related transfer function}
+\acro{snr}[SNR]{signal-to-noise ratio}
+\acro{lstm}[LSTM]{long short-term memory}
+\acro{polqa}[POLQA]{Perceptual Objective Listening Quality Analysis}
+\acro{sdr}[SDR]{signal-to-distortion ratio}
+\acro{cnns}[CNNs]{Convolutional Neural Networks}
+\acro{vae}[VAE]{variational auto-encoder}
+\acro{gan}[GAN]{generative adversarial network}
+\acro{tf}[T-F]{time-frequency}
+\acro{sde}[SDE]{stochastic differential equation}
+\acro{ode}[ODE]{ordinary differential equation}
+\acro{drr}[DRR]{direct to reverberant ratio}
+\acro{lsd}[LSD]{log spectral distance}
+\acro{sisdr}[SI-SDR]{scale-invariant signal to distortion ratio}
+\acro{mos}[MOS]{mean opinion score}
+\acro{map}[MAP]{maximum a posteriori}
+\acro{sde}[SDE]{stochastic differential equation}
+\acro{ode}[ODE]{ordinary differential equation}
+\acro{dps}[DPS]{diffusion posterior sampling}
+\acro{tfrs}[TFRs]{Time-Frequency Representations}
+\acro{cqt}[C$Q$T]{Constant-$Q$ Transform}
+\acro{ldm}[LDM]{Latent Diffusion Model}
+\end{acronym}
+
+% Title. Please use IEEE-compliant title case when specifying the title here,
+% as it has implications for the copyright notice
+% ------
+\title{Music Inpainting with Similarity-Guided Latent Diffusion}
+%\title{Guiding Diffusion Inpainting of Music with a Similarity Graph}
+%\title{Similarity-Guided Diffusion for Long-Gap Music Inpainting}
+%\title{
+%Combining Diffusion Models with Self-Similarity Search for Long-Gap Music Inpainting}
+
+% Note: Please do NOT use \thanks or a \footnote in any of the author markup
+
+% Single address
+% To use with only one author or several with the same address
+% ---------------
+%\oneauthor
+%  {Anonymous Authors}
+%  {Anonymous Affiliations\\\texttt{anonymous@ismir.net}
+%  }
+%
+% Two addresses
+% --------------
+%\twoauthors
+%   {First author} {School \\ Department}
+%   {Second author} {Company \\ Address}
+
+% Three addresses
+% --------------
+
+\multauthor
+  {Sean Turland$^{1,\hspace{1pt}2}$ \hspace{1cm} Eloi Moliner$^1$ \hspace{1cm}  Vesa Välimäki$^1$ }
+  {
+  $^1$ Acoustic Lab, Dept. Information and Communications Engineering, Aalto University, Finland\\
+  $^2$ Acoustics and Audio Group, University of Edinburgh, United Kingdom \\
+  {\tt\small sean.turland@ed.ac.uk, eloi.moliner@aalto.fi,
+  vesa.valimaki@aalto.fi}
+  }
+
+
+
+% Four or more addresses
+% OR alternative format for large number of co-authors
+% ------------
+% \multauthor
+%   {First author$^1$ \hspace{1cm} Second author$^1$ \hspace{1cm} Third author$^2$}
+%   {{\bf Fourth author$^3$ \hspace{1cm} Fifth author$^2$ \hspace{1cm} Sixth author$^1$}\\
+%   $^1$ Department of Computer Science, University, Country\\
+%   $^2$ International Laboratories, City, Country\\
+%   $^3$ Company, Address\\
+%   {\tt\small CorrespondenceAuthor@ismir.edu, PossibleOtherAuthor@ismir.edu}
+%   }
+
+% For the author list in the Creative Common license, please enter author names.
+% Please abbreviate the first names of authors and add 'and' between the second to last and last authors.
+\def\authorname{S. Turland, E. Moliner, and V. Välimäki}
+
+% Optional: To use hyperref, uncomment the following.
+% \usepackage[bookmarks=false,pdfauthor={\authorname},pdfsubject={\pdfsubject},hidelinks]{hyperref}
+% Mind the bookmarks=false option; bookmarks are incompatible with ismir.sty.
+
+\sloppy % please retain sloppy command for improved formatting
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+\vspace{-5pt}
+%Music inpainting aims to reconstruct missing segments of a corrupted recording. While diffusion-based generative models improve reconstruction for medium-length gaps, they often struggle to preserve musical plausibility over multi-second gaps. We introduce Similarity-Guided Diffusion Posterior Sampling (SimDPS), a hybrid method that combines diffusion-based inference with similarity search. Candidate segments are first retrieved from a corpus based on contextual similarity, then incorporated into a modified likelihood that guides the diffusion process toward contextually consistent reconstructions. Subjective evaluation on piano music inpainting with 2-s gaps shows that the proposed SimDPS method enhances perceptual plausibility compared to unguided diffusion and frequently outperforms similarity search alone when moderately similar candidates are available. These results demonstrate the potential of a hybrid similarity approach for diffusion-based audio enhancement with long gaps.
+
+
+%The abstract is here below. Just shaving word count dow, currently at 209. 
+
+%I've put some draft (not yet finalised for presentation) plots of the latest mushra test in the LatentAudioPlots folder. 
+% Added the statistical significance too. 
+
+
+We propose music inpainting technique combining similarity matching and a diffusion-based generative model to replace large segments of audio recordings with suitable alternatives. % for error-correction or sound-editing purposes. 
+%Potential applications are error corrections or sound editing. 
+%While similarity-search approaches can be effective, they often produce temporal inconsistencies when a strong match is unavailable; conversely, generative methods offer high expressivity but are prone to contextual drift as gap sizes increase.
+%While similarity search and diffusion-based methods exist independently, they suffer from temporal inconsistencies and contextual drift as gap sizes increase, re
+%Approaches based on similarity search, while sometimes effective, tend to suffer from temporal inconsistencies if a strong match does not exist, while diffusion-based approaches have stronger expressivity but  may suffer from contextual drift as gap sizes increase.  
+%This paper introduces
+The proposed hybrid method, Similarity-Guided Diffusion Posterior Sampling (SimDPS), retrieves candidate replacement segments from the wider signal based on contextual similarity 
+%is a hybrid, training-free approach that bridges similarity search techniques and diffusion-based inference.
+%SimDPS 
+%retrieves candidate segments from the broader track using waveform similarity to guide the diffusion process toward contextually consistent reconstructions.
+%incorporating them into a modified likelihood 
+and uses them to guide the diffusion process toward coherent reconstructions. 
+Being model-agnostic, the framework is compatible with any pre-trained diffusion model operating in either the waveform or latent domain.
+%The method is model-agnostic and training-free, meaning it can be applied to any pre-trained waveform- or latent-domain diffusion model.
+%without expensive decoding steps. 
+%Furthermore, we propose a relaxed variant (SimDPS-Relax) that utilises temporal latent representations to aggregate information from multiple candidates via a spectral-based Pareto-loss objective at inference time.
+Objective evaluations demonstrate that SimDPS outperforms widely adopted RePaint and DPS methods across acoustic features and neural-embedding distance metrics.
+%both classical acoustic features and neural-embedding distance metrics.
+Subjective evaluations on multi-genre music datasets confirm that SimDPS enhances perceptual plausibility compared to previous diffusion-based methods and demonstrates robustness to poorly matched similarity candidates. These findings pave the way for improved music restoration and context-aware audio editing. %(203 words)
+
+
+
+%Music inpainting is a technique used to reconstruct missing segments of audio recordings with a suitable alternative. Similarity search algorithms and diffusion-based methods exist independently, but suffer from temporal inconsistencies and contextual drift as gap sizes increase. This paper introduces Similarity-Guided Diffusion Posterior Sampling (SimDPS), a hybrid, training-free approach that bridges classical signal-processing search techniques and diffusion-based inference.
+
+\end{abstract}
+
+\vspace{-3pt}
+\section{Introduction}\label{sec:introduction}
+\vspace{-2pt}
+
+
+%Audio enhancement is a research field within audio processing that aims to resolve issues in sound quality. One such method, 
+%Audio inpainting \cite{adler_audio_2012} consists of correcting the loss of signal segments altogether by replacing the silence with a perceptually plausible alternative.
+
+%1 Intro to audio inpainting and motivation. also long gaps intro
+Audio inpainting \cite{adler_audio_2012} aims to reconstruct missing segments of a signal with perceptually plausible content.
+It has applications in packet-loss concealment for data transmission \cite{sanneck_new_1996}, restoration of recordings stored on degraded physical media \cite{moliner_diffusion-based_2024}, and correction of errors in post-production audio editing \cite{levy_controllable_2023}.
+Distinct applications place different demands on the duration of the missing material: ranging gaps of a few milliseconds in packet-loss concealment, to segments lasting several seconds in audio restoration and editing.
+
+% 2 we focus on long gaps, why is it challenging, what makes it different
+This paper focuses on the long-gap regime, which is particularly challenging because it requires the model to go beyond local signal continuity and preserve long-range musical coherence.
+At this scale, the missing region may contain an entire phrase or structural unit, such as a chorus or motif, that is central to the track's identity.
+While classical methods (e.g., autoregressive modeling 
+\cite{janssen_adaptive_1986,kauppinen_audio_2002,esquef_interpolation_2003} 
+or time-frequency sparsity
+\cite{mokry_introducing_2019, taubock2020dictionary}) effectively handle short gaps, their reliance on signal stationarity makes them unsuitable for multi-second gaps.
+
+%they work well for very short gaps below $10\,\text{ms}$ but degrade rapidly once this assumption no longer holds.
+
+
+
+
+%Traditional audio inpainting methods, such as autoregressive modeling \cite{janssen_adaptive_1986,esquef_interpolation_2003,kauppinen_audio_2002} and approaches based on time–frequency sparsity \cite{mokry_introducing_2019,taubock2020dictionary},
+%rely solely on information immediately surrounding the lost signal segment.
+%They assume that the audio waveform can be modeled as approximately stationary over short time spans, meaning its spectral characteristics remain predictable from recent past samples. 
+%These methods are effective for very short gaps, typically below 10\,ms, but their performance deteriorates rapidly for longer durations, as the assumption of local stationarity no longer holds. 
+
+Two main paradigms currently address long-gap inpainting.
+The first is self-similarity search, which exploits the redundancy and structural recurrence of musical signals \cite{foote1999visualizing} by retrieving candidate segments from observed portions of the same track \cite{martin2011exemplar, perraudin_inpainting_2018}.
+%Martin et al. \cite{martin2011exemplar} used tonal features and string-matching algorithms to assign large missing regions from musical exemplars.
+%Similarly, Perraudin et al. \cite{perraudin_inpainting_2018} modelled the audio signal as a graph of \ac{stft} frames to identify optimal inpainting candidates from elsewhere in the recording.
+This paradigm is particularly effective for music with strong repetition, where missing segments can be replaced by near-verbatim copies without breaking stylistic consistency.
+Its main limitation is that it remains deterministic: once a sufficiently close match is unavailable, the method cannot adapt the retrieved material to the local details of the target context.
+
+A second paradigm is based on generative modelling, where masked regions are reconstructed by sampling from a learned probabilistic prior, such as a diffusion model \cite{sohl-dickstein_deep_2015, ho_denoising_2020}.
+%Within this family, diffusion models have shown strong performance for signal generation across a range of domains \cite{sohl-dickstein_deep_2015, ho_denoising_2020}.
+Diffusion models have been previously used for audio inpainting, either by training with paired original and masked signals \cite{kong2025a2sb}, or employing training-free techniques, such as posterior sampling approaches \cite{moliner2023solving, moliner_diffusion-based_2024}, 
+or initial noise optimization \cite{novack_ditto_2024, ben2024d}.
+\acp{ldm} have also been used for audio inpainting \cite{liu2023audioldm, wang2023audit}, and are attractive because compressed representations can model multi-second context efficiently.
+Unlike deterministic retrieval, these generative approaches can synthesise novel content that blends with the surrounding audio.
+
+However, generative inpainting methods are prone to identity drift as gap duration increases.
+Even when the generated audio is locally smooth and acoustically plausible, it may fail to preserve track-specific attributes such as melody or rhythmic placement.
+A way to mitigate this drift is conditioning the generation process on auxiliary controls, such as piano rolls \cite{liu2023maid} or text descriptions \cite{wang2023audit, liu2023audioldm, novack_ditto_2024}.
+Yet such side information is rarely available in practice.
+
+
+
+%and does not exploit the internal repetition structure that often makes music inpainting possible.
+
+
+We propose \textit{SimDPS}, a novel hybrid method that uses similarity-based retrieval to provide posterior guidance for diffusion models.
+The method combines the structural reliability of self-similarity search with the expressivity of generative modelling, allowing the long-gap reconstruction to remain contextually grounded while still adapting to the local musical details.
+%\textcolor{red}{multiple guidance}
+The search procedure produces multiple weighted candidates, around which we design an aggregated spectral-latent inference scheme.
+Crucially, our approach is domain-agnostic, serving as a plug-in for both latent and waveform-based architectures.
+
+
+
+
+
+
+
+
+% Traditional audio inpainting techniques, including autoregressive modeling \cite{janssen_adaptive_1986,esquef_interpolation_2003,kauppinen_audio_2002} or time-frequency signal sparsity \cite{mokry_introducing_2019, taubock2020dictionary},
+%rely solely on information immediately surrounding the segment of lost signal.
+%These methods can be greatly successful for small gaps in signal of less than 10 milliseconds (ms) but perform poorly at longer durations., as the stationarity assumption is no longer valid.
+%[INSERT nonnegative matrix factorisation and sparse assumption references here, alongside pros and cons].
+
+
+%\textcolor{red}{[write something about the multiple candidate experiments that we can do in latent space]}
+
+
+%The use of similarity-based retrieval as posterior guidance for music inpainting remains largely unexplored.
+
+
+%The remainder of the paper is organised as follows. Sec.~2 reviews the inpainting and diffusion background, and Sec.~3 presents the proposed similarity-guided diffusion framework. Sec.~4 reports experiments in two settings: a latent-diffusion model for general music and a waveform-domain diffusion model specialised for piano music. Sec.~5 concludes the paper.
+
+
+
+
+
+\vspace{-3pt}
+\section{Background}
+\vspace{-2pt}
+
+%\subsection{Audio Inpainting}
+
+
+
+
+Audio inpainting can be formulated as a linear inverse problem.
+Let $\mathbf{X} \in \mathbb{R}^{N \times C}$ denote the clean representation to be reconstructed, where $N$ is the number of temporal positions and $C$ is the feature dimension.
+In the single-channel waveform domain, $C=1$, whereas in a latent representation produced by an audio autoencoder we may have $C$ channels.
+The degraded observation satisfies
+\begin{equation}
+    \mathbf{Y} = \mathbf{M}(\mathbf{X} + \boldsymbol{\varepsilon}_Y),
+    \label{eq:inverse}
+\end{equation}
+where $\mathbf{Y} \in \mathbb{R}^{N \times C}$ denotes the observation, the temporal mask $\mathbf{M} \in \mathbb{R}^{N\times N}$ is a binary operator that preserves the observed time indices and zeros out the missing interval, and the same mask is applied to every feature channel.
+The observation uncertainty is modelled as Gaussian noise, $\boldsymbol{\varepsilon}_Y \sim \mathcal{N}(\mathbf{0}, \sigma_Y^2 \mathbf{I})$, where $\sigma_Y$ controls the noise standard deviation.
+The goal of audio inpainting is therefore to recover the original representation $\mathbf{X}$.
+
+% where each component of the noise vector $\mathbf{\varepsilon}_i$ is assumed to be drawn independently from a uniform Gaussian distribution $\mathbf{\varepsilon} \sim \mathcal{N}(0, \sigma_\text{rec}^2\mathbf{I})$ with zero mean and variance $\sigma_\text{rec}^2$. 
+%either with explicit knowledge of the operator or in a \textit{blind} setting, where the operator is unknown. To formulate the lost signal segments of an audio inpainting inverse problem, we define $A: \mathbb{R}^n \to \mathbb{R}^n $ as a linear operator such that 
+
+%\begin{equation}
+%    A(\mathbf{x}) = M\mathbf{x}
+%\end{equation}
+
+%for a \textit{mask} matrix $M \in \mathbb{R}^{n \times n}$. 
+
+The temporal mask $\mathbf{M}$ is diagonal and binary, with elements $\mathbf{M}_{ij} = m_i \delta_{ij}$, where $\delta_{ij}$ is the Kronecker delta and $m_i \in \{0, 1\}$ indicates whether temporal index $i$ is observed.
+As we focus on compact gaps, the mask is restricted to a missing interval $[t_s, t_e]$ of length $L = t_e - t_s + 1$, with $m_i = 0$ for $t_s \leq i \leq t_e$ and $m_i = 1$ otherwise.
+%When inference is carried out in a latent representation, the audio mask can be transformed to latent time indices using the temporal downsampling factor of the encoder.
+%\textcolor{red}{This may not even be necessary here now, just keep it generic. This paper describes the inpainting problem in such a way that describes both latent domain and waveform domain inpainting.}
+%\textcolor{red}{
+%I'm not sure it is the best place to add this. 
+%This paper describes the inpainting problem in such a way that describes both latent domain and waveform domain inpainting. But it is important to understand how the two relate to each other, assuming we have an autoencoder that produces latent vectors and reconstructs waveforms from these latent vectors.
+%When inference is performed in latent space, the sample-domain mask must be converted to latent time indices. Let $S$ denote the encoder temporal downsampling factor, so that latent index $n$ corresponds to the waveform block $[nS, (n+1)S-1]$.
+%We then define a latent coefficient as observed only if all waveform samples in its corresponding block are observed. The latent mask $\mathbf{M}_\mathrm{latent}$ is therefore diagonal and binary, with entries
+%\begin{equation}
+%    m_\mathrm{latent} = \prod_{i=nS}^{(n+1)S-1} m_i \ .
+%\end{equation}
+%Equivalently, a waveform gap $[t_s, t_e]$ induces a latent gap $[\tau_s, \tau_e]$, where
+%\begin{equation}
+%    \tau_s = \left\lfloor \frac{t_s}{S} \right\rfloor, \qquad \tau_e = \left\lfloor \frac{t_e}{S} \right\rfloor \ .
+%\end{equation}
+%This defines the minimal latent mask implied by the temporal compression factor $S$. In principle, the interval could be enlarged further to account for the encoder receptive field, but we do not do so here.
+%}
+
+
+
+%To assess long gaps, we restrict the mask to a single section of lost signal of length $L = t_e - t_s$, such that $\{m_{s}, ..., m_{e}\} = 0$, else  $m_i = 1$. 
+
+%This operation  is equivalent to applying the Hadamard product, or element-wise multiplication, to the signal and the diagonal elements of $M$, $\mathbf{m}= \{m_1, ..., m_n\}$, resulting in
+%$\mathbf{y} = \mathbf{m} \odot \mathbf{x} + \mathbf{\varepsilon}$.
+
+%    \label{eq:inverse}
+%\end{equation}
+% For a mask operator, the operation is inherently non-injective with a non-zero null-space that inhibits the existence of an inverse for $M$. As such, the problem is ill-posed, and inpainting methods deploy prior information and informed assumptions to produce a solution that is perceptually consistent with the context. 
+% The task of audio inpainting can be formulated as a linear inverse problem
+% \begin{equation}
+%     \mathbf{y} = M\mathbf{x} + \mathbf{\varepsilon},
+% \end{equation}
+% such that the observed signal $\mathbf{y} \in \mathbb{R}^n$ is the result of transforming the original signal $\mathbf{x} \in \mathbb{R}^n $ with a \textit{mask} matrix $M \in \mathbb{R}^{n\times n}$, whilst $\mathbf{\varepsilon}$ accounts for additional noise or measurement errors. The aim of audio inpainting is to recover $\mathbf{x}$. 
+
+% The  \textit{mask} matrix is diagonal, with elements $M_{ij}$ defined as $ M_{ij} = m_i \delta_{ij}$, where $\delta_{ij}$ is the Kronecker delta and $m_i \in \{0, 1\}$ indicates whether the sample as position $i$ is unobserved or observed, respectively. This is equivalent to applying the Hadamard product to the signal and the diagonal elements of $M$, $\mathbf{m}= \{m_1, ..., m_n\}$, resulting in the full audio inpainting inverse problem as
+% \begin{equation}
+%     \mathbf{y} = \mathbf{m} \odot \mathbf{x} + \mathbf{\varepsilon} \\,
+%     \label{inverse}
+% \end{equation}
+% The resulting probability density function for this noise model is
+% \begin{equation}
+%     p(\mathbf{\varepsilon}) = \frac{1}{(2\pi\sigma_\text{rec}^2)^{n/2}} \exp\left(-\frac{\|\mathbf{\varepsilon}\|_2^2}{2\sigma^2}\right)
+% \end{equation}
+
+
+%\textcolor{red}{We can consider skipping this parragraph
+Because $\mathbf{M}$ is non-injective, the forward model has a non-trivial null space.
+The null space of $\mathbf{M}$ is
+$\{ \mathbf{Z} \in \mathbb{R}^{N \times C} \,:\, \mathbf{M}\mathbf{Z} = \mathbf{0} \}$,
+corresponding to content supported entirely on the missing interval.
+Audio inpainting is therefore ill-posed and requires prior information or structural assumptions to recover a perceptually consistent solution.
+%}
+
+%The degradation caused by a mask operator is inherently non-injective with a non-zero null-space that inhibits the existence of an inverse for $M$.
+
+%Null-space projection:
+%\begin{equation}
+%(\mathbf{I}-\mathbf{M})\mathbf{y}=\mathbf{0}
+%\end{equation}
+
+
+
+
+
+
+%\subsection{Bayesian Formulation}
+
+
+
+% Move this into the unified section, with covariance instead of 
+%For a signal $\mathbf{x} \in \mathbb{R}^n$ in sample space, we consider the probability density function, $p(\mathbf{x})$, that defines a prior distribution of domain signals. The aim is to sample from a posterior distribution, $p(\mathbf{x} | \mathbf{y})$, incorporating knowledge from the observed signal to reconstruct the lost portions of signal. By Bayes' theorem
+%\begin{equation}
+%    p(\mathbf{x} | \mathbf{y}) \propto p(\mathbf{x})p(\mathbf{y} | \mathbf{x}) ,
+%    \label{bayes}
+%\end{equation}
+%Rearranging  (\ref{eq:inverse}) and substituting in the Gaussian probability density function $p(\mathbf{\varepsilon}) = p(\mathbf{y} - \mathbf{m} \odot \mathbf{x})$, we obtain the likelihood of observing $\mathbf{y}$ given a fixed $\mathbf{x}_0$:
+%\begin{equation}
+%    p(\mathbf{y}|\mathbf{x}) = \frac{1}{(2\pi\sigma_\text{rec}^2)^{n/2}} \exp\left(-\frac{\|\mathbf{y} - \mathbf{m} \odot \mathbf{x}\|_2^2}{2\sigma^2}\right)
+%    \label{eq: likelihood}
+%\end{equation}
+
+
+
+%The prior distribution is intractable, but various unsupervised learning methods exist to form an approximation \cite{goodfellow_generative_2014, kingma_auto-encoding_2022, dinh_density_2017}. In this work, we focus on the application of diffusion-based priors for posterior sampling.
+
+\vspace{-3pt}
+\subsection{Diffusion Probabilistic Models}
+\vspace{-2pt}
+
+Diffusion probabilistic models are generative models that can sample from complex distributions and have attracted substantial attention in recent years \cite{song_score-based_2021, karras2022elucidating}.
+They can be used to model the distribution $p_X$ of clean signals, either directly in waveform space or indirectly in the latent space of an autoencoder, from a finite dataset of examples.
+This learned distribution can then serve as a data-driven prior over plausible clean reconstructions for ill-posed inverse problems such as audio inpainting \cite{moliner_diffusion-based_2024}.
+
+More specifically, diffusion models define an iterative mapping, controlled by a diffusion-time variable $\tau$, that transforms samples from a tractable (usually Gaussian) prior distribution $p_T \sim \mathcal{N}(\mathbf{0},\sigma^2(T)\mathbf{I})$ at $\tau = T$ into samples from the data distribution $p_X$ at $\tau = 0$.
+Following \cite{karras2022elucidating}, this mapping can be described by the \textit{probability-flow ordinary differential equation }, which defines a deterministic, bijective transformation:
+\begin{equation}
+    d\mathbf{X} = - \dot \sigma(\tau)\sigma(\tau) \, \nabla_{\mathbf{X}} \log p_{\tau}(\mathbf{X}; \sigma(\tau)) \, d\tau \, .
+\label{eq:probflow}
+\end{equation}
+Here, $\dot\sigma(\tau)$ denotes the derivative of $\sigma(\tau)$ with respect to $\tau$.
+Following \cite{karras2022elucidating}, we set $\sigma(\tau) = \tau$.
+Diffusion models approximate the intractable score function with a neural network
+$s_\theta(\mathbf{X}_\tau, \tau) \approx \nabla_{\mathbf{X}} \log p_{\tau}(\mathbf{X}; \sigma(\tau))$, which is trained with a denoising score matching objective \cite{vincent2011connection}.
+In practice, new samples from $p_X$ are obtained by initialising $\mathbf{X}_T \sim p_T$ and numerically solving the probability-flow equation in \eqref{eq:probflow}.
+%such as Euler--Heun \cite{karras2022elucidating}.
+
+An important property of the score function under Gaussian corruption is that it can be expressed in terms of the minimum mean-squared-error (MMSE) estimator of the clean sample $\mathbf{X}_0$ given $\mathbf{X}_\tau$.
+By Tweedie's formula \cite{efron2011tweedie},
+\begin{equation}
+\hspace{-4pt}
+    \nabla_{\mathbf{X}} \log p_\tau(\mathbf{X}; \sigma(\tau)) 
+\hspace{-2pt}
+    =
+\hspace{-2pt}
+    \tfrac{1}
+        {\sigma^2(\tau)} 
+        (\mathbb{E}[\mathbf{X}_0
+\hspace{-2pt}
+        \mid
+\hspace{-2pt}
+        \mathbf{X}_\tau; \sigma(\tau)]
+\hspace{-1pt}
+        -
+\hspace{-1pt}
+        \mathbf{X}_\tau) .
+    \label{eq:tweedie}
+\end{equation}
+This connection shows that the score network can be interpreted as a Gaussian denoiser:
+$\hat{\mathbf{X}}_0(\mathbf{X}_\tau)= \mathbf{X}_\tau+ \sigma^2(\tau) s_\theta(\mathbf{X}_\tau, \tau) \approx \mathbb{E}[\mathbf{X}_0 \mid \mathbf{X}_\tau; \sigma(\tau)]$.
+
+\vspace{-3pt}
+\subsection{Diffusion Posterior Sampling}
+\vspace{-2pt}
+
+An appealing feature of diffusion models is that they can be adapted to solve inverse problems without task-specific retraining.
+This work builds on Diffusion Posterior Sampling (DPS) \cite{chung2023diffusion} to solve the audio inpainting inverse problem \cite{moliner_diffusion-based_2024}.
+Specifically, DPS steers sampling toward the conditional posterior $p(\mathbf{X}\mid\mathbf{Y})$ by replacing the prior score in \eqref{eq:probflow} with an approximation to the posterior score.
+%Specifically, DPS samples from the conditional posterior $p(\mathbf{X}\mid\mathbf{Y})$ rather than from the unconditional model, which amounts to replacing the prior score in \eqref{eq:probflow} with the posterior score.
+By Bayes' rule, the posterior score decomposes as
+%\vspace{-7pt}
+\begin{equation}
+\hspace{-2pt}
+\underbrace{\nabla_{\mathbf{X}_\tau}
+\hspace{-2pt}
+ \log p_\tau
+\hspace{-1pt}
+ (\mathbf{X}_\tau 
+\hspace{-2.5pt}
+\mid 
+\hspace{-2.5pt}
+\mathbf{Y}
+\hspace{-1pt}
+)}_{\text{Posterior Score}}
+\hspace{-3pt}
+= 
+\hspace{-3pt}
+\underbrace{\nabla_{\mathbf{X}_\tau} 
+\hspace{-2pt}
+\log p_\tau
+\hspace{-1pt}
+(
+\hspace{-1pt}
+    \mathbf{X}_\tau
+\hspace{-1pt}
+)}_{\text{Prior Score}} 
+\hspace{-1.5pt}
+ + 
+\hspace{-1.5pt}
+ \underbrace{\nabla_{\mathbf{X}_\tau} 
+\hspace{-2pt}
+ \log p_\tau
+\hspace{-1pt}
+ (\mathbf{Y} 
+\hspace{-2.5pt}
+ \mid
+\hspace{-2.5pt}
+  \mathbf{X}_\tau
+\hspace{-1pt}
+  )}_{\text{Likelihood Score}} \, .
+\label{eq:bayes_score_decomp}
+\end{equation}
+While the prior score is approximated by the trained diffusion model $s_\theta(\mathbf{X}_\tau, \tau)$, the likelihood score is typically approximated from the assumed observation model.
+
+Following \cite{chung2023diffusion}, we introduce a Gaussian surrogate likelihood on the observed rows of $\mathbf{M}$, centred at the denoised estimate produced by the score model and using the observation-uncertainty scale parameter $\sigma_Y^2$.
+This yields, up to a constant factor absorbed into the guidance scaling, the likelihood-score approximation
+%\vspace{-8pt}
+\begin{equation}
+\hspace{-6pt}
+\nabla_{\mathbf{X}_\tau}
+\hspace{-1.5pt}
+ \log p_\tau(\mathbf{Y}
+\hspace{-1.5pt}
+  \mid
+\hspace{-1.5pt}
+   \mathbf{X}_\tau) 
+\hspace{-2pt}
+ \approx
+\hspace{-2pt}
+  -
+\hspace{-0.5pt}
+  \nabla_{\mathbf{X}_\tau}
+\hspace{-1pt}
+   \tfrac{1}{\sigma_Y^2} 
+\hspace{-2pt}
+  \left\|\mathbf{M} (\mathbf{Y}
+\hspace{-2pt}
+   -
+   %\vspace{-17pt}
+\hspace{-2pt}
+    \hat{\mathbf{X}}_0(\mathbf{X}_\tau) )\right\|_F^2 
+\hspace{-2pt}
+    ,
+\label{eq:likelihood_gradient}
+\end{equation}
+%\vspace{-8pt}
+where the gradient operator $\nabla_{\mathbf{X}_\tau}$ is implemented via automatic differentiation and therefore propagates through the score model $s_\theta(\mathbf{X}_\tau, \tau)$.
+Because the score model is a neural network trained to exploit dependencies in the chosen representation, the backpropagated gradient is not confined to the range of $\mathbf{M}$ and also produces non-zero components in the null space of $\mathbf{M}$.
+Consequently, the likelihood score guides not only the observed entries but also the missing region through correlations learned during training.
+Combined with the prior score, it steers the sampling trajectory towards solutions consistent with the observations $\mathbf{Y}$.
+
+\vspace{-3pt}
+\section{Similarity-Guided Diffusion}
+\vspace{-2pt}
+
+\begin{figure}[t]
+    \centering
+     \resizebox{0.9\columnwidth}{!}{
+    \hspace{-20pt}\input{SimDiffHorizontaldiagramcompact_eloi}
+    }
+    \vspace{-10pt}
+    \caption{Diagram of the proposed SimDPS framework.
+    \vspace{-40pt}
+    }
+    \label{fig:diagram}
+    \label{fig:placeholder}
+\end{figure}
+
+While posterior sampling is effective for short- to medium-length gaps \cite{moliner_diffusion-based_2024}, it becomes less reliable for longer gaps ($>300\,\mathrm{ms}$), where the generated content becomes more susceptible to contextual drift.
+The likelihood score in \eqref{eq:likelihood_gradient} is defined only on the observed rows, so the missing portion---which lies in the null-space of $\mathbf{M}$---is conditioned only indirectly through the score network and therefore remains weakly constrained.
+%The likelihood score in \eqref{eq:likelihood_gradient} constrains the generated representation only on the observed rows, leaving the missing portion---which lies in the null-space of $\mathbf{M}$---weakly conditioned.
+As a result, the diffusion prior may produce reconstructions that are locally smooth and acoustically plausible yet still diverge from the expected musical content.
+
+To address this limitation, we introduce an auxiliary representation $\tilde{\mathbf{X}} \in \mathbb{R}^{N \times C}$ that acts as a first approximation to the unknown clean sample $\mathbf{X}_0$ and contributes non-zero components in the null-space of $\mathbf{M}$.
+As described in Sec.~\ref{sec:sim}, this auxiliary representation is obtained through a similarity-search procedure that uses the observed context $\mathbf{Y}$ as reference.
+The search can be performed either in waveform space or in latent space and may return either a single candidate or several high-scoring candidates.
+The resulting auxiliary information is incorporated into the modified likelihood described in Sec.~\ref{sec:unilik}, thereby guiding the reverse diffusion process through a revised posterior.
+An overview of the SimDPS framework is shown in Figure~\ref{fig:diagram}.
+
+
+\vspace{-3pt}
+\subsection{Modified Likelihood with Similarity Guidance}
+%for Similarity-Guided Inpainting}
+\label{sec:unilik}
+\vspace{-2pt}
+
+We model the auxiliary guide as a noisy observation of the ground truth on the missing region:
+\begin{equation} \label{eq:approx}
+   (\mathbf{I} - \mathbf{M})\tilde{\mathbf{X}} = (\mathbf{I} - \mathbf{M})(\mathbf{X} + \boldsymbol{\varepsilon}_{\tilde{X}}),
+\end{equation}
+where $\boldsymbol{\varepsilon}_{\tilde{X}}$ captures the uncertainty of the auxiliary variable and is assumed to have i.i.d. Gaussian entries with variance $\sigma_{\tilde{X}}^2$.
+% As with $\sigma_Y^2$, this quantity is used in practice as an effective guidance scale rather than a calibrated physical variance.
+We then construct a synthetic measurement
+\begin{equation}
+    \tilde{\mathbf{Y}} = \mathbf{M}\mathbf{Y} + (\mathbf{I} - \mathbf{M})\tilde{\mathbf{X}},
+    \label{eq:synthetic_measurement}
+\end{equation}
+which combines the observed measurement $\mathbf{Y}$ with the auxiliary estimate $\tilde{\mathbf{X}}$ projected into the null-space of $\mathbf{M}$.
+Substituting \eqref{eq:inverse} and \eqref{eq:approx} yields $\tilde{\mathbf{Y}} = \mathbf{X} + \boldsymbol{\varepsilon}$ in the corresponding surrogate model, where $\boldsymbol{\varepsilon}$ is a non-isotropic Gaussian random matrix that captures both observed-data and auxiliary uncertainty.
+More precisely, row $i$ of $\boldsymbol{\varepsilon}$ has covariance $\left[m_i \sigma_Y^2 + (1-m_i)\sigma_{\tilde{X}}^2\right]\mathbf{I}_C$.
+Because the observed and auxiliary terms act on complementary subspaces, the synthetic log-likelihood decomposes into two additive terms:
+$\log p(\tilde{\mathbf{Y}} \mid \mathbf{X}) = \log p(\mathbf{Y} \mid \mathbf{X}) + \log p(\tilde{\mathbf{X}} \mid \mathbf{X})$.
+
+The modified likelihood integrates directly into \eqref{eq:bayes_score_decomp}.
+%Writing $\hat{\mathbf{X}}_0^\tau = \hat{\mathbf{X}}_0(\mathbf{X}_\tau)$ for brevity, and 
+Defining 
+$\mathcal{L}_Y(\mathbf{X}_\tau)\hspace{-3pt}=\hspace{-3pt}\left\| \mathbf{M}(\mathbf{Y} \hspace{-2pt}- \hspace{-2pt} \hat{\mathbf{X}}_0(\mathbf{X}_\tau)) \right\|_F^2\hspace{-2pt}$
+, and
+$\mathcal{L}_{\tilde{X}}(\mathbf{X}_\tau)\hspace{-2pt}=\hspace{-2pt}\left\| (\mathbf{I}\hspace{-2pt}-\hspace{-2pt}\mathbf{M})(\tilde{\mathbf{X}} \hspace{-2pt}- \hspace{-2pt}\hat{\mathbf{X}}_0(\mathbf{X}_\tau)) \right\|_F^2$,
+the modified likelihood score can be approximated analogously to \eqref{eq:likelihood_gradient} as
+\begin{equation}
+\nabla_{\mathbf{X}_\tau}
+\hspace{-2pt}
+\log p_\tau(\tilde{\mathbf{Y}}
+\hspace{-2pt}
+\mid
+\hspace{-2pt}
+\mathbf{X}_\tau)
+\hspace{-2pt}
+\approx
+\hspace{-2pt}
+ -\nabla_{\mathbf{X}_\tau}
+\hspace{-2pt}
+\left(\tfrac{1}
+    {\sigma_Y^2} 
+    \mathcal{L}_Y(\mathbf{X}_\tau)
+\hspace{-2pt}
++ 
+\hspace{-2pt}
+\tfrac{1}{\sigma_{\tilde{X}}^2}\mathcal{L}_{\tilde{X}}(\mathbf{X}_\tau)
+\hspace{-2pt}
+\right).
+\label{eq:unified_gradient}
+\end{equation}
+This yields a modified guidance mechanism in which the contributions of the observation $\mathbf{Y}$ and the auxiliary guide $\tilde{\mathbf{X}}$ are weighted according to their respective uncertainties.
+We parameterise the effective variances following \cite{moliner2023solving, shen2024understanding} as
+$\sigma_Y^2 = \tfrac{\sigma(\tau)}{\omega_Y \sqrt{N C}} \left\| \nabla_{\mathbf{X}_\tau} \mathcal{L}_Y(\mathbf{X}_\tau) \right\|_F$,
+with $\sigma_{\tilde{X}}^2$ defined analogously using a parameter $\omega_{\tilde{X}}$.
+The weights $\omega_Y$ and $\omega_{\tilde{X}}$ control the balance between observed and auxiliary constraints and may be set to zero to disable either contribution.
+
+\vspace{-3pt}
+\subsubsection{Guidance from multiple candidates} \label{sec:multi}
+\vspace{-2pt}
+
+%\textcolor{red}{Add here the new relaxed version implementation?}
+
+%\textcolor{red}{Add details about the weighted candidate loss sum method.}
+
+
+Beyond conditioning on a single inpaint candidate $\tilde{\mathbf{X}}$, we generalise the guidance by considering a set of the top-$K$ candidates, $\{(\mathbf{\tilde{X}}_i, \tilde{s}_i)\}^K_{i=1}$, ranked by their similarity scores $\tilde{s}_i$. We represent this set as a discrete weighted empirical distribution $p_{\mathrm{cand}}(x) = \sum^K_{i=1}  \sigma(\mathbf{\tilde{s}})_i \delta(x-\mathbf{\tilde{X}}_i),$ where $ \sigma(\mathbf{\tilde{s}})_i$ denotes the softmax-normalised confidence weight for the $i$-th candidate.
+
+
+Extending \eqref{eq:unified_gradient}, we incorporate the influence of the entire ensemble via a weighted multi-candidate loss:
+\begin{equation}
+\textstyle
+\mathcal{L}_{\tilde{X}}
+\hspace{-1pt}
+(\mathbf{X}_\tau)
+\hspace{-2pt}
+= 
+\hspace{-2pt}
+\sum^K_{i=1} 
+\hspace{-2pt}
+\sigma(\mathbf{\tilde{s}})_i \
+ d_\mathrm{spec}(
+\hspace{-1pt}
+\tilde{\mathbf{X}}_i, 
+\hspace{-1pt}
+\hat{\mathbf{X}}_0(\mathbf{X}_\tau)
+\hspace{-1pt}
+).
+\end{equation} 
+Instead of employing a Frobenius norm across multiple candidates, which we observe produces conflicting gradients, we opt for a spectral loss $d_\mathrm{spec}$ tailored to this setup.
+
+%optimising the objective toward their Fréchet mean.
+
+
+
+
+%In addition to guiding the generation to condition on a single inpaint candidate, we can formulate the set of top-$K$ candidates according to their similarity score, $\{(\mathbf{\tilde{X}}_i, \tilde{s}_i)\}^K_{i=1}$, as the discrete weighted empirical distribution
+%    $p_{\mathrm{cand}}(x) = \sum^N_{i=1} \sigma(\mathbf{\tilde{s}})_i \ \delta(x-\mathbf{\tilde{X}}_i)$,
+%where $\sigma(\mathbf{\tilde{s}})_i$ is the softmax-normalised confidence weight for the $i$-th element of the top-$K$ similarity scores, $\mathbf{\tilde{s}}$. Adapting \eqref{eq:unified_gradient}, we combine the influence of each candidate through the weighted modified multi-loss likelihood 
+%\begin{equation}
+%\mathcal{L}_{\tilde{X}}(\mathbf{X}_\tau)= \sum^K_{i=1} \sigma(\mathbf{\tilde{s}})_i \ d_\mathrm{multi}((\mathbf{I}-\mathbf{M})\tilde{\mathbf{X}}_i, (\mathbf{I}-\mathbf{M})\hat{\mathbf{X}}_0(\mathbf{X}_\tau)),
+%\end{equation} where $d_\mathrm{multi}$ is the loss function selected to compare each candidate to the denoised estimate.
+
+
+%Calculating the Frobenius norm directly on multiple latent representations as in  \eqref{eq:unified_gradient} produces conflicting guidance signals that result in an optimisation objective toward the Fréchet mean of the candidates. Instead, we require a transformation that emphasises the macroscopic similarities across all candidates, whilst omitting high-frequency differences. 
+
+%Directly applying the Frobenius norm across multiple candidates produces conflicting guidance, optimising the objective toward their Fréchet mean. Instead, we must emphasise the macroscopic structural similarities while discarding high-frequency variations. 
+
+%We achieve this by mapping the candidates into the frequency domain along the temporal dimension, $\psi_\mathbf{X} = \mathcal{F}_1(\mathbf{W} \odot\mathbf{X})$, taking a tapered-cosine window, $\mathbf{W}$ of each signal that isolates the inpaint section. In the waveform domain, this results in a regular frequency spectrum. In the latent domain, although the specific feature dimensions are abstract, their evolution over time captures structural information. Rather than obtaining frequency information via a transformation that requires through the decoder during inference steps \cite{song2024solving}, we instead assess the discrete Fourier transform of each individual latent feature, without decoding. This separates, for each feature, their high-frequency variance from the low-frequency structure. We calculate the final loss over only the low frequency content by applying a low pass mask $\mathcal{H}_\mathrm{LP}$ with cutoff index $f_c$, such that the spectral loss over both domains can be defined as 
+
+%We observe that defining $d_\mathrm{multi}$ as a Frobenius norm across multiple candidates produces conflicting gradients, optimising the objective toward their Fréchet mean. Instead, we aim to emphasise the macroscopic structural similarities while discarding high-frequency variations.
+Our motivation is to emphasise the macroscopic structural similarities while discarding high-frequency variations.
+We achieve this by mapping candidates to the frequency domain along the temporal dimension:
+%using a windowed version of the inverse mask
+%$\psi_\mathbf{X} = \mathcal{F}( (\mathbf{I} - \mathbf{M}^\prime) \odot\mathbf{X})$, 
+$\psi_\mathbf{X} = \mathcal{F}( (\mathbf{I} - \mathbf{M}) \odot\mathbf{X})$
+%To avoid decoder passes during inference \cite{song2024solving}, we apply the discrete Fourier transform directly to the latent features, whose temporal evolution successfully captures structural information. [no need to write this, notation is general, it can be understood the fourier transform is on the latent space]
+and isolating the low-frequency content by applying a low-pass filter $\mathcal{H}_\mathrm{LP}$, with cutoff frequency $f_c$.
+%a mask-length dependent cutoff index $f_c = \lfloor \alpha L \rfloor $, for a cutoff ratio parameter $\alpha$
+The spectral loss is defined as:
+\begin{equation}
+ d_\mathrm{spec}(\tilde{\mathbf{X}}, \hat{\mathbf{X}}_0(\mathbf{X}_\tau))
+ \hspace{-2pt}
+ =
+ \hspace{-2pt}
+ \big\lVert |\psi_{\tilde{\mathbf{X}}} \odot \mathcal{H}_\mathrm{LP}| - |\psi_{\hat{\mathbf{X}}_0(\mathbf{X}_\tau)} \odot \mathcal{H}_\mathrm{LP}| \big\rVert^2_F  .
+\end{equation}
+%\textcolor{red}{Briefly mention details about the early-stopping, and the guidance weighting.}
+%Following analysis of the denoising frequency regime of diffusion models \cite{falck2025fourier}, we apply the multi-candidate guidance force only through the early stages of the inference schedule, at all timesteps $\tau \geq \tau_\mathrm{multi}$. The generated inpaint solution is thus guided toward a manifold defined by low-frequency features across all top-$K$ candidates early in the process, acting as an ensemble regulariser defined by similar patterns in the larger search signal. At later steps, where high-frequency detail is refined, the missing portion is conditioned only on the pre-trained prior, ensuring high-frequency alignment. 
+%Consistent with diffusion frequency regimes
+
+Inspired by \cite{falck2025fourier}, we restrict the multi-candidate guidance to early inference stages ($\sigma(\tau) \geq \sigma_\mathrm{multi}$). This acts as an ensemble search signal regulariser, guiding generation toward a low-frequency manifold defined by the top-$K$ candidates. At later steps, candidate guidance is removed, allowing the pre-trained prior to independently refine high-frequency details. We refer to the multiple candidate version of our method as \textit{SimDPS-Multi}, while the single-candidate version is referred to as  \textit{SimDPS-Solo}.
+
+%\textcolor{red}{If there is time, good to run an ablation on this in Experiments section to justify the choices. Most of it was perceptual trial and error.}
+
+
+
+\vspace{-3pt}
+\subsection{Similarity Search} \label{sec:sim}
+\vspace{-2pt}
+
+Inspired by \cite{perraudin_inpainting_2018}, we construct the auxiliary guide $\tilde{\mathbf{X}}$ by searching a source corpus $\mathcal{S} = \{\mathbf{S}_i \in \mathbb{R}^{L_i \times C}\}_{i=1}$ for a segment with surrounding context matching that of the observation $\mathbf{Y}$. Each source signal $\mathbf{S}_i$ may have arbitrary length $L_i > N$ and $C$ channels. While \cite{perraudin_inpainting_2018} retrieves variable-length segments, we extract fixed length-$N$ candidates matching the observation window, enabling temporally consistent evaluation across various methods. 
+%we constrain each retrieved segment to have the same temporal extent as the observation window and rely on the diffusion model to smooth the final transitions.
+
+To evaluate a  candidate $\mathbf{S}_{i,\hat{t}}$, starting at index $\hat{t}$ in source $\mathbf{S}_i \in \mathcal{S}$,
+%we define a binary mask $\mathbf{M} \in \{0,1\}^{N \times C}$, which equals $1$ in the observed context and $0$ inside the gap. 
+we compute the similarity cost over the context:
+\begin{equation}
+\mathcal{J}_i(\hat{t}) = \sum_k  d_k\big(\mathbf{Y},\, \mathbf{M} \mathbf{S}_{i,\hat{t}}\big),
+\end{equation}
+where $d_k(\cdot, \cdot)$ are domain-specific distance metrics. Candidate positions overlapping the masked interval are discarded.
+The single best candidate is selected according to 
+\begin{equation}\label{eq:candidate_pair}
+(\mathbf{S}^*, \hat{t}^*) = \arg \min_{\mathbf{S}_i \in \mathcal{S},\, \hat{t}} \mathcal{J}_i(\hat{t}), \quad \tilde{\mathbf{X}} = \mathbf{S}^*_{\hat{t}^*},
+\end{equation}
+yielding a similarity score $s = 1/(1 + \mathcal{J}_{*}(\hat{t}^*))$. 
+%Depending on the implementation, this search may alternatively return a small set of top candidates. We next detail the latent-domain implementation used with \acp{ldm} and its waveform-domain counterpart.
+
+We now outline the domain-specific distance metrics and search constraints employed for latent representations and waveforms, respectively. Across both, we penalise contextual misalignment closer to the missing interval by applying a temporal weight matrix $\mathbf{W}_k$,  
+%\in [0,1]^{N_k \times C_k}$
+with dimensions matching the $k$-th metric space. Using a metric-dependent context length,  $L_{c}$, the temporal weight ramps linearly from $0$ at the context extremes ($t_s - L_c$ and $t_e + L_c$) to $1$ at the gap boundaries ($t_s$ and $t_e$). 
+
+%\subsection{Similarity Search} \label{sec:sim}
+
+%Inspired by \cite{perraudin_inpainting_2018}, we construct the auxiliary guide $\tilde{\mathbf{X}}$ by searching a source corpus $\mathcal{S} = \{\mathbf{S}_1, \mathbf{S}_2, \dots, \mathbf{S}_K\}$ for segments whose surrounding context is compatible with the observation $\mathbf{Y}$.
+%Depending on the implementation, the elements of $\mathcal{S}$ may be waveform-domain signals or latent-domain representations, and the search may return either a single candidate segment or a small set of candidates.
+
+%The goal is to retrieve material that matches the observed context on both sides of the gap and can therefore serve as a plausible guide for the missing region.
+%Unlike \cite{perraudin_inpainting_2018}, which allows variable candidate lengths, we constrain each retrieved segment to have the same temporal extent as the observation window and rely on the diffusion model to smooth the final transitions.
+
+%For notational simplicity, we first describe the single-candidate case.
+%Let $\hat{t}$ denote the starting index of a candidate window extracted from $\mathbf{S}_i \in \mathbb{R}^{N^\prime \times C}$.
+%We denote the length-$N$ segment beginning at $\hat{t}$ by $\mathbf{S}_i(\hat{t}) = (\mathbf{S}_i)_{[\hat{t},\dots,\hat{t}+N-1],:}$, where $N \leq N^\prime$ is the temporal length of the observation window $\mathbf{Y}$.
+%The candidate and start index are selected by minimising a similarity cost:
+%\begin{equation}\label{eq:candidate_pair}
+%(\mathbf{S}^*, \hat{t}^*) = \arg \min_{\mathbf{S}_i \in \mathcal{S}, \hat{t}} \mathcal{J}_i(\hat{t}),
+%\quad
+%\tilde{\mathbf{X}} = \mathbf{S}^*(\hat{t}^*).
+%\end{equation}
+
+%Let $t_s$ and $t_e$ denote the start and end indices of the gap, and let $L_\mathrm{pre}$ and $L_\mathrm{post}$ denote the available left and right context lengths.
+%We define the observed contexts as $\mathbf{C}_{\mathrm{pre}} = \mathbf{Y}_{[t_s-L_\mathrm{pre},\dots,t_s-1],:}$ and $\mathbf{C}_{\mathrm{post}} = \mathbf{Y}_{[t_e+1,\dots,t_e+L_\mathrm{post}],:}$.
+%For a candidate start $\hat{t}$, the corresponding candidate contexts are
+%$\hat{\mathbf{C}}_{i,\mathrm{pre}}(\hat{t}) = (\mathbf{S}_i)_{[\hat{t}+t_s-L_\mathrm{pre},\dots,\hat{t}+t_s-1],:}$ and
+%$\hat{\mathbf{C}}_{i,\mathrm{post}}(\hat{t}) = (\mathbf{S}_i)_{[\hat{t}+t_e+1,\dots,\hat{t}+t_e+L_\mathrm{post}],:}$.
+%The generic similarity score, $s_i(\hat{t}) = 1/(1 + \mathcal{J}_i(\hat{t}))$, is defined by the cost function
+%\begin{equation}
+%\mathcal{J}_i(\hat{t})
+%\hspace{-2pt}
+% =
+%\hspace{-2pt}
+%  d_{\mathrm{pre}}
+%    \hspace{-2pt}
+%  \left(
+%    \hspace{-2pt}
+%    \mathbf{C}_\mathrm{pre},
+%    \hat{\mathbf{C}}_{i,\mathrm{pre}}(\hat{t})
+%    \hspace{-2pt}
+%\right) 
+%+ d_{\mathrm{post}}
+%    \hspace{-2pt}
+%\left(
+%    \hspace{-2pt}
+%    \mathbf{C}_\mathrm{post},
+%    \hat{\mathbf{C}}_{i,\mathrm{post}}(\hat{t})
+%    \hspace{-2pt}
+%\right) .
+%\end{equation}
+%The distances $d_\mathrm{pre}$ and $d_\mathrm{post}$ depend on the representation used for the search.
+%Candidate positions whose context windows overlap the masked interval are discarded.
+%We next describe the latent-domain implementation used with \acp{ldm} and its waveform-domain counterpart.
+
+
+\vspace{-3pt}
+\subsubsection{Latent-domain search}
+\vspace{-2pt}
+
+When the diffusion prior operates in the latent domain, both the observation $\mathbf{Y}$ and the source corpus $\mathcal{S}$ are represented in the same autoencoder space as used by the generative model.
+%Each source item is represented as a sequence $\mathbf{S}_i \in \mathbb{R}^{N_i \times C}$, where $C$ denotes the channel dimension.
+Search is performed along the temporal axis; because these sequences have low temporal resolution (approximately 25 Hz in our setting), an exhaustive search remains computationally efficient. 
+%We compare the pre- and post-contexts using squared Frobenius distances weighted by their respective context lengths: $d_{\mathrm{pre}}(\mathbf{C}, \hat{\mathbf{C}}) \hspace{-2pt}=\hspace{-2pt} \frac{L_\mathrm{pre}}{L_\mathrm{pre}+L_\mathrm{post}}\|\mathbf{C} \hspace{-2pt}-\hspace{-2pt} \hat{\mathbf{C}}\|_F^2$, with $d_\mathrm{post}$ defined analogously.
+A single distance metric ($k=1$), the weighted squared Frobenius distance, is used to compare the contexts of each candidate to the observation:
+\begin{equation}
+    d(\mathbf{Y},\mathbf{M} \mathbf{S}_{i,\hat{t}}) = \|\sqrt{\mathbf{W}_1} \odot (\mathbf{Y} - \mathbf{M} \mathbf{S}_{i,\hat{t}})\|_F^2.
+\end{equation}
+
+We propose two variants of the latent-space implementation: \emph{Solo} and \emph{Multi}.
+In the \emph{Solo} variant, the guide $\tilde{\mathbf{X}}$ is formed from the single best-scoring candidate.
+The \emph{Multi} variant retains several top-ranked candidates and calculates the combined guidance as described in Sec.~\ref{sec:multi}, aiming to reduce sensitivity to an imperfect single match.
+%where frames closer to the gap are weighted by a relaxed variant of the mask, $\mathbf{M}_c$, that linearly ramps from $0$ at $t_s -L_c$ to $1$ at $t_s$, and equivalently for $t_e$.
+%Each distance metric is the weighted squared Frobenius distance, $d_k = \sqrt{\sum^n_{i=1} \sum_{j=1}^m W_{ij} (X_{ij} - Y_{ij})^2}$, with a diagonal weighting matrix $\mathbf{w} = (w_1, w_2,...w_M)$ acting as a ramped context duration that provide greater weighting to frames closer to the mask boundary.
+%When the diffusion prior operates in the latent domain, both the observation $\mathbf{Y}$ and the source corpus $\mathcal{S}$ are represented in the same pre-trained audio-autoencoder space used by the generative model.
+%Each source item is therefore a sequence $\mathbf{S}_i \in \mathbb{R}^{N_i \times C}$, where $C$ denotes the channel dimension.
+%Search is performed directly along the latent temporal axis.
+%Because the latent sequences have low temporal resolution (approximately $25\,\mathrm{Hz}$ in our setting), exhaustive search remains computationally efficient.
+%We compare the pre- and post-contexts using squared Frobenius distances weighted by their respective context lengths:
+% $d_{\mathrm{pre}}(\mathbf{C}, \hat{\mathbf{C}}) = \tfrac{L_\mathrm{pre}}{L_\mathrm{pre}+L_\mathrm{post}}\left\|\mathbf{C} - \hat{\mathbf{C}}\right\|_F^2$ ,
+%d_{\mathrm{post}}(\mathbf{C}, \hat{\mathbf{C}}) &= \tfrac{L_\mathrm{post}}{L_\mathrm{pre}+L_\mathrm{post}}\left\|\mathbf{C} - \hat{\mathbf{C}}\right\|_F^2$ .
+%\end{aligned}
+%\end{equation}
+%and $d_\mathrm{post}$ define analogously.
+
+
+%\textcolor{red}{add something about when multiple candidates are taken?}
+
+%\textcolor{red}{I am not sure about this, may be out of place, please check}
+
+%After selection, the retrieved latent segment is inserted into the missing interval and blended with the observed latent context using a short boundary transition.
+%We use spherical linear interpolation (SLERP) rather than linear interpolation, as it better respects the geometry of the latent manifold and reduces decoding artifacts.
+%The resulting blended latent sequence is used as the auxiliary guide $\tilde{\mathbf{X}}$ in the modified likelihood of Sec.~\ref{sec:unilik}.
+
+%We propose two variants of the proposed latent-space implementation: \emph{Solo}, and \emph{Multi}.
+%In the \emph{Solo} variant, the guide $\tilde{\mathbf{X}}$ is formed from the single best-scoring candidate.
+%While in the \emph{Multi} variant, several top-ranked candidates are retained and the combined guidance is calculated as  described in Section \ref{sec:multi}, aiming  to reduce sensitivity to an imperfect single match.
+
+
+%Once $t^* + o^*$ is selected, the approximation for the masked signal is extracted from the corresponding source audio segment, $\mathbf{x}^*_\mathrm{approx} = \mathbf{s}^*_{[t^* + o^* , t^* + o^* + n-1]} \in \mathbb{R}^n$, subject to the correct zero-padding.
+
+
+
+%\subsection{Similarity Graph Search for Approximate Guidance}
+
+%jTo synthesise an approximate inpainting candidate we adapt the similarity graph search methods of \cite{perraudin_inpainting_2018} to the generalised context of designing an audio guide, $\mathbf{\tilde{y}}$, for diffusion-based generative modelling.
+%One important assumption made is that there exists some sequential order between successive dimensions of the signal vector. While this holds true for most audio signals (e.g. in sample or STFT-frame space), encoded latent vectors \cite{liu_audioldm_2023, evans_stable_2024} compress audio such that temporal information is spread across the vector's dimensions. Methods exist for learning latent operators that aim to rectify this \cite{raphaeli_silo_2025}, but require training a separate neural network model for every mask length - rendering it impractical for our approach.
+%An approximation of the lost signal, $(\mathbf{1}-\mathbf{m} ) \, \odot \, \mathbf{x}$, can be
+%obtained by retrieving
+%synthesised by identifying 
+%a perceptually similar segment from a separate corpus of source audio signals, denoted by $\mathcal{S} = \{\mathbf{s}_1, \mathbf{s}_2, \dots, \mathbf{s}_N\}$. Each signal $\mathbf{s}_i \in \mathbb{R}^{L_i}$ 
+%is a vector in $\mathbb{R}^{L_i}$,
+%where
+%can have a unique arbitrary length $L_i$.
+%represents the length of the $i$-th signal, which can vary.
+%This is achieved by peaking the segment that minimises a cost function in a feature space that measures the dissimilarity between the audio context surrounding the masked region and the context surrounding candidate segments from $\mathbf{s}$. 
+
+%\subsubsection{Phase 1- Feature-based similarity search}
+
+%Let a subvector of a signal $\mathbf{v}$ from sample index $a$ to $b$ be denoted by $\mathbf{v}_{[a,b]}$. The observed signal $\mathbf{y} \in \mathbb{R}^n$ contains a masked region from sample $t_{s}$ of duration $L$. We define both a pre-context and post-context region of the mask $\mathbf{c} = (\mathbf{c}_{\mathrm{pre}}, \mathbf{c}_{\mathrm{post}})$, for $\mathbf{c}_\mathrm{pre} = \mathbf{y}_{[t_{s}-L_c , t_{s}-1]}$ and $\mathbf{c}_\mathrm{post} = \mathbf{y}_{[t_{s} + L, t_{s}+L + L_c-1]}$, each of duration $L_c$. 
+%Similarly, a candidate replacement patch in a source signal $\mathbf{s} \in \mathcal{S}$ is defined by its starting sample index, $\hat{t}_s$. The context corresponding to this candidate is given by $\mathbf{\hat{c}} = (\mathbf{\hat{c}}_{\mathrm{pre}}, \mathbf{\hat{c}}_{\mathrm{post}})$ with segments $\mathbf{\hat{c}}_\mathrm{pre}(\hat{t}_s) = \mathbf{s}_{[\hat{t}_s-L_c , \hat{t}_s -1 ]}$ and $\mathbf{\hat{c}}_\mathrm{post}(\hat{t}_s) = \mathbf{s}_{[\hat{t}_s+L , \hat{t}_s+L+L_c]}$.
+
+%To assess perceptual similarity between the context regions, we define a set of $K$ feature mappings $\{\Phi_k\}_{k=1}^K$. Each map $\Phi_k: \mathbb{R}^{L_c} \to \mathcal{F}_k$ transforms a context segment into a separate feature space, $\mathcal{F}_k$, such that each is a valid metric space with a distance metric, $d_k$. To ensure distances are comparable across features, we apply a normalisation rescaling factor to each distance metric $d'_k = d_k/\textrm{max}(d_k)$, bounding the values between $0$ and $1$. Typically, the distance metric is in the form of a weighted Euclidean distance, where an additional vector, $\mathbf{w}$, applies an optional element-wise weighting. This provides domain-specific functionality for additional control over the similarity search, such as sigmoid functions or perceptual frequency weightings.  
+
+%This process may include resampling to a consistent search sample rate, applying a Short-Time Fourier Transform (STFT) or Mel spectrogram, and subsequent feature transformations such as log-magnitude or chroma feature extraction.
+
+%The optimal candidate for the inpainting guide is selected by a search algorithm for the starting index $t^*$ from source audio $\mathbf{s}^*$ that minimises a dissimilarity cost function, $\mathcal{J}(\hat{t}_s)$, over a set of valid indices $\mathcal{T}$ for each $\mathbf{s}_i \in \mathcal{S} $. The objective function is formulated as:
+%\begin{equation}
+%    t_s^* = \arg\min_{\hat{t}_s \in \mathcal{T}} \mathcal{J}(\hat{t}_s) \ .
+%\end{equation}
+%The cost function $\mathcal{J}(\hat{t}_s)$ is a weighted sum of distances between the feature representations of the target and candidate contexts:
+%\begin{equation}
+%\begin{split}
+%    \mathcal{J}(\hat{t}_s) = \sum_{k=1}^K \alpha_k & \Big(d'\big(\Phi_k(\mathbf{c}_\mathrm{pre}), \Phi_k(\mathbf{\hat{c}}_\mathrm{pre}(\hat{t}_s)), \mathbf{w}_\mathrm{pre}\big) \\
+%    & \left. + d'\big(\Phi_k(\mathbf{c}_\mathrm{post}), \Phi_k(\mathbf{\hat{c}}_\mathrm{post}(\hat{t}_s)), \mathbf{w}_\mathrm{post}\big) \Big) \right.,
+%\end{split}
+%\end{equation}
+%where $\alpha_k$ are scalar hyperparameters for each of the $K$ features. 
+
+
+%\subsubsection{Phase 2-  Waveform continuity search}
+%
+%While large source audio corpora may require efficient search methods such as k-nearest neighbour (kNN) algorithms \cite{dong_efficient_2011}, shorter audio source signals can be searched efficiently by first resampling to a lower sample rate, assessing the similarity at $\hat{t}_s$ intervals of hop length $L_h$, then performing a waveform-based smoothness search in the local region of the $\hat{t}_s^*$ to refine the selection in sample space. 
+%%The secondary search aims to minimise discontinuities at the splice points by making fine adjustments to the selected start time, $t^*$. 
+%A small search window of sample offset values, $\mathcal{W} = \{-L_h/2, ..., +L_h/2\}$, is defined around the initial estimate, $\hat{t}_s^*$, and the offset, $o^*$, is found using the absolute value between samples at the mask's boundaries and the candidate's context,
+%\begin{equation}
+%o^* = \arg\min_{o \in \mathcal{W}} \left| \mathbf{y}_{[t_s - 1]} - \mathbf{s}_{[t^* + o]} \right| + \left| \mathbf{y}_{[t_s + L-1]} - \mathbf{s}_{[t^* + o + L - 1]} \right| \ .
+%\end{equation}
+%The final starting position for the inpainting patch is then given by $t_s^* + o^*$. Through this two-stage search method, our process allows for both efficient exploration of the feature space and precise alignment of the chosen replacement segment.
+
+
+%\newcounter{phase}[algorithm]
+%\newlength{\phaserulewidth}
+%%\newcommand{\setphaserulewidth}{\setlength{\phaserulewidth}}
+%\newcommand{\phase}[1]{%
+  % \vspace{-1.25ex}
+  % Top phase rule
+  % \Statex\leavevmode\llap{\rule{\dimexpr\labelwidth+\labelsep}{\phaserulewidth}}\rule{\linewidth}{\phaserulewidth}
+%  \vspace{0.1em}
+%%  \Statex\strut\refstepcounter{phase}
+%  \hspace{0em}\textit{Phase~\thephase~--~#1}% Phase text
+  % Bottom phase rule
+%  \vspace{-2ex}
+%  \Statex\leavevmode\llap{ 
+      % \rule{\dimexpr\labelwidth+\labelsep}{\phaserulewidth}
+%  }
+%  \hspace{0em} 
+%  \rule{0.9\linewidth}{\phaserulewidth}
+%}
+%\makeatother
+%\setphaserulewidth{.3pt}
+
+%\begin{algorithm}[t!]
+%\caption{Similarity Search for Approximate Guidance}
+%\label{alg:guidance_synthesis}
+%\begin{algorithmic}
+%\Require 
+%    Observed signal $\mathbf{y}$, Mask start $t_s$, Mask length $L$, 
+%    Source corpus $\mathcal{S}$, Context length $L_c$, Feature set $\{\Phi_k, d_k, \mathbf{w}_k, \alpha_k\}_{k=1}^K$, Hop length $L_h$, Search window $\mathcal{W}$
+%
+%\phase{Feature-based similarity search}
+%
+%\State $\mathbf{c}_{\text{pre}} \leftarrow \mathbf{y}_{[t_s-L_c,t_s]}$, $\mathbf{c}_{\text{post}} \leftarrow \mathbf{y}_{[t_s+L,t_s+L+L_c]}$
+%\State $(\mathcal{J}_{\min}, t^*, \mathbf{s}^*) \leftarrow (\infty, \text{0}, \text{0})$
+%
+%\For{each source signal $\mathbf{s}_i \in \mathcal{S}$}
+%    \For{each candidate start $\hat{t}_s$ in $\mathbf{s}_i$ with hop length $L_h$}
+%        \State $\hat{\mathbf{c}}_{\text{pre}} \leftarrow \mathbf{s}_{i, [\hat{t}_s-L_c,\hat{t}_s]}$, $\hat{\mathbf{c}}_{\text{post}} \leftarrow \mathbf{s}_{i, [\hat{t}_s+L,\hat{t}_s+L+L_c]}$
+%        \State $\begin{aligned}[t]
+%                \mathcal{J} \leftarrow \sum_{k} \alpha_k \big[ & d_k'(\Phi_k(\mathbf{c}_{\text{pre}}), \Phi_k(\hat{\mathbf{c}}_{\text{pre}}), \mathbf{w}_k) \\
+%                & + d_k'(\Phi_k(\mathbf{c}_{\text{post}}), \Phi_k(\hat{\mathbf{c}}_{\text{post}}), \mathbf{w}_k) \big]
+%               \end{aligned}$
+%        \If{$\mathcal{J} < \mathcal{J}_{\min}$}
+%            \State $(\mathcal{J}_{\min}, t^*, \mathbf{s}^*) \leftarrow (\mathcal{J}, \hat{t}_s, \mathbf{s}_i)$
+%        \EndIf
+%    \EndFor
+%\EndFor
+%
+%\phase{Waveform continuity search}
+%\State $o^* \leftarrow \underset{o \in \mathcal{W}}{\operatorname{argmin}} \left( |\mathbf{y}_{[t_s - 1]} - \mathbf{s}^*_{[t^* + o]}| + |\mathbf{y}_{[t_s + L]} - \mathbf{s}^*_{[t^* + o + L - 1]}| \right)$
+
+
+%\State $\tilde{\mathbf{x}}^* \leftarrow \mathbf{s}^*_{[t^* + o^* , t^* + o^* + L-1]}$
+%\State \Return $\tilde{\mathbf{x}}^*$
+%\end{algorithmic}
+%\end{algorithm}
+
+%The resulting vector incorporates the approximate measurement through a Gaussian model of the uncertainty used for unified likelihood guidance described in  (\ref{eq:unified_gradient}), enabling a pre-trained diffusion model to generate an inpainting solution that is perceptually consistent with its surrounding context.
+
+
+\vspace{-5pt}
+\subsubsection{Waveform-domain search}
+\vspace{-3pt}
+
+In the waveform setting, we 
+%specialise the same framework to $C=1$ and
+operate directly on audio samples. 
+Each distance metric, $d_k$, computes a weighted Frobenius distance over a feature domain:
+$d_k(\mathbf{Y},\mathbf{M} \mathbf{S}_{i,\hat{t}}) = \big\| \sqrt{\mathbf{W}_k} \odot \big( \Phi_k(\mathbf{Y}) - \Phi_k(\mathbf{M} \mathbf{S}_{i,\hat{t}}) \big) \big\|^2_F$. 
+%The vectors $\mathbf{w}_k \in \mathbb{R}^M$ act as ramped heterogeneous context duration terms that provide reduced weighting to frames further from the mask boundary.
+Here, $\{\Phi_k\}_{k=1}^K$ are feature mappings, and $\{d_k\}_{k=1}^K$ is a set of distances designed to compare such features.
+
+%Each distance metric is the weighted Euclidean distance, $d_k = \sqrt{\sum_{j=1}^M w_j (x_j - y_j)^2}$, with weighting vectors $\mathbf{w}_k = (w_1, w_2,...w_M)$ acting as ramped heterogeneous context duration terms that provide greater weighting to frames closer to the mask boundary.
+%\sum_{k=1}^{K} \alpha_k \,
+%d_k 
+%\hspace{-2pt}
+%\left(
+%    \hspace{-1pt}
+%    \Phi_k(\mathbf{C}),
+%    \Phi_k(\hat{\mathbf{C}})
+%    \hspace{-1pt}
+%\right)\hspace{-2pt},
+%The context distances are computed as follows:
+%\begin{equation}
+%\begin{aligned}
+%\hspace{-6pt}
+%d_\mathrm{pre}(\mathbf{C}, \hat{\mathbf{C}})
+%\hspace{-2pt}
+%= 
+%\hspace{-2pt}
+%\tfrac{L_\mathrm{pre}}{L_\mathrm{pre}+L_\mathrm{post}}
+%\sum_{k=1}^{K} \alpha_k \,
+%d_k 
+%\hspace{-2pt}
+%\left(
+%    \hspace{-1pt}
+%    \Phi_k(\mathbf{C}),
+%    \Phi_k(\hat{\mathbf{C}})
+%    \hspace{-1pt}
+%\right)\hspace{-2pt},
+%\end{aligned}
+%\end{equation}
+%with $d_\mathrm{post}$ defined analogously.
+%Here, $\{\Phi_k\}_{k=1}^K$ are feature mappings, and $\{d_k\}_{k=1}^K$ is a set of distances designed to compare such features.
+%into 
+%metric spaces $(\mathcal{F}_k,d_k)$,
+%The coefficients $\alpha_k$ balance the contributions of the different feature distances. 
+
+%and $\mathbf{W}_k = \mathrm{diag}(\mathbf{w}_k)$ is an optional diagonal weighting matrix that emphasises feature alignment closest to the gap.
+
+%\textcolor{red}{do we need to define W now?}
+
+%Because exhaustive sample-accurate search over long waveforms is computationally expensive, we first evaluate $\mathcal{J}_i(\hat{t})$ on a coarse grid with hop length $L_h$ to obtain an initial estimate $\hat{t}^*$.
+%This estimate is then refined locally with a waveform-continuity criterion that favours smooth matching at the gap boundaries.
+%Defining a small offset search window $\mathcal{W} = \{-L_h/2,\dots,+L_h/2\}$, we choose
+%\begin{equation}
+%\begin{aligned}
+%o^* = \arg\min_{o \in \mathcal{W}} \Big(&\left| \mathbf{Y}_{t_s - 1,1} - \mathbf{S}^*_{\hat{t}^* + t_s - 1 + o,1} \right| \\
+%&+ \left| \mathbf{Y}_{t_e + 1,1} - \mathbf{S}^*_{\hat{t}^* + t_e + 1 + o,1} \right| \Big) .
+%\end{aligned}
+%\end{equation}
+%The final guide is then extracted as
+%\begin{equation}
+%\tilde{\mathbf{X}} = (\mathbf{S}^*)_{[\hat{t}^* + o^*,\dots,\hat{t}^* + o^* + n-1],:}
+%\end{equation}
+%with zero-padding applied when needed.
+%This two-stage procedure combines efficient context matching in feature space with fine sample-level alignment at the gap boundaries.
+
+Because exhaustive sample-accurate search is computationally expensive, we employ a two-stage procedure. First, we evaluate the search objective at a lower temporal resolution to identify an initial candidate. We then locally refine this estimate within a small window by minimizing the sample-level continuity error at the gap boundaries.
+%Through this search method, our process allows for both efficient exploration of the feature space and precise alignment of the chosen replacement segment.
+
+%This approach ensures fine-grained alignment at the transitions while maintaining the computational efficiency of feature-space matching. 
+%The final guide $\tilde{\mathbf{X}}$ is extracted from the source at the refined offset, using zero-padding where necessary.
+
+
+
+
+\vspace{-5pt}
+\section{Experiments and Results}
+\vspace{-3pt}
+
+We evaluate SimDPS across two distinct settings. 
+%that vary in signal representation and diffusion priors.
+The first employs a \ac{ldm} pre-trained on general music, which we assess using both objective and subjective metrics.
+We also report an additional setting based on a waveform-domain diffusion model specialized on piano recordings.
+
+%\textcolor{red}{If there is time at the very end, I have the scripts to be able to get objective metrics for waveform piano too. But maybe not as crucial as other tasks at this point }
+
+%We report the outcomes for the two settings separately. The latent-domain setting includes both objective and subjective evaluation, while the waveform-domain setting currently includes a listening test only.
+
+\vspace{-5pt}
+\subsection{Latent Diffusion on General Music}
+\vspace{-3pt}
+
+We base our experiments on the open-source music foundation model ACE-Step 1.5 \cite{gong2026ace}, a \ac{ldm} trained on a large-scale music dataset. This setting allows us to evaluate \textit{SimDPS} in a broad, non-domain-specific scenario.
+
+Only two components are used from ACE-Step 1.5: the autoencoder and the Diffusion Transformer backbone.
+The autoencoder is a waveform-domain VAE \cite{evans2025stable} with a temporal rate of 25\,Hz and 64 channels.
+For the Diffusion Transformer, we use the public ``base'' checkpoint from the generative pre-training stage, which is trained with the flow-matching objective to predict a velocity field, denoted $v_\theta$ following \cite{lipman2022flow}. This velocity estimate can be converted to a score estimate \cite{schusterbauer2025diff2flow}. Under the diffusion-time convention adopted in this paper, the conversion is given by:
+%\textcolor{red}{Is it worth citing a derivation here? I believe some of Boffi's work did this: https://arxiv.org/abs/2303.08797 I added }, via
+\begin{equation}
+   s_\theta(\mathbf{X}_\tau, \tau) = \tfrac{1}{\tau^2 + \tau} \left(v_\theta\left(\tfrac{1}{\tau+1}\mathbf{X}_\tau, \tfrac{\tau}{\tau+1}\right)- \mathbf{X}_\tau \right).
+\end{equation}
+Furthermore, because the model is trained with condition dropout, a common practice when using Classifier-Free Guidance \cite{ho2022classifier}, we can evaluate it without prompts or other conditioning inputs, effectively using it as an unconditional diffusion model.
+%\textcolor{red}{I could eventually put some "creative uses" of this in the webpage with a text prompt that aligns/differs from the search audio.}
+We also observed that the model tends to end generated samples with silence or ending-like musical material, so we generate 5 extra seconds that get later discarded to prevent this bias from affecting the results.
+
+Across all latent methods, we run the inference schedule over $T=100$ time steps. 
+We adopt the second-order stochastic sampler from \cite{karras2022elucidating}, setting the schedule parameters as $\sigma_\mathrm{max} = 20$,  $\sigma_\mathrm{min} = 10^{-3}$,  $\rho=7$, 
+and stochasticity parameter $S_\mathrm{churn}=10$.
+We set the likelihood weighting parameter $\omega_Y=0.5$. 
+For \textit{SimDPS-Solo}, we set $\omega_{\tilde{X}} = 0.3$, and for \textit{SimDPS-Multi}, $\omega_{\tilde{X}} = 0.1$. 
+In \textit{SimDPS-Multi}, 
+we only apply the similarity guidance until the minimum noise threshold $\sigma_\mathrm{multi}=0.5$ is passed, and set the spectral loss' cutoff frequency $f_c = 1.6$ \, Hz.
+We operate the latent search with a context length approximately equivalent to $1.0$s, and retain the top-$15$ candidates for \textit{SimDPS-Multi}.
+%\textcolor{red}{
+%and set the cutoff frequency $f_c = 2.5$ \, Hz.
+%For a latent space operating at $25$Hz, 
+%such cutoff frequency restricts the multi-candidate guidance to aggregating latent feature frequencies that evolve slower than $2$ seconds.
+%}
+%targeting overarching long-gap structure. 
+
+
+
+%\textcolor{red}{
+%I've moved this to here, can be shrunk too. 
+%Since the inference is performed in latent space, the mask can either be applied directly on the audio by decoding at each inference step, or the sample-domain mask can be converted to latent time indices. Let $S$ denote the encoder temporal downsampling factor, so that latent index $n$ corresponds to the waveform block $[nS, (n+1)S-1]$.
+%We then define a latent coefficient as observed only if all waveform samples in its corresponding block are observed. The latent mask $\mathbf{M}_\mathrm{latent}$ is therefore diagonal and binary, with entries
+%\begin{equation}
+%    m_\mathrm{latent} = \prod_{i=nS}^{(n+1)S-1} m_i \ .
+%\end{equation}
+%Equivalently, a waveform gap $[t_s, t_e]$ induces a latent gap $[\tau_s, \tau_e]$, where
+%\begin{equation}
+%    \tau_s = \left\lfloor \frac{t_s}{S} \right\rfloor, \qquad \tau_e = \left\lfloor \frac{t_e}{S} \right\rfloor \ .
+%\end{equation}
+%This defines the minimal latent mask implied by the temporal compression factor $S$. In principle, the interval could be enlarged further to account for the encoder receptive field, but we do not do so here.
+%}
+
+\begin{table*}[t]
+\centering
+\caption{Objective evaluation metrics for the latent-domain setting. Best results are in \textbf{bold} and second-best are \underline{underlined}. 
+%\textcolor{red}{These are calculated across the gap only. I do have the metrics for the full audio if you prefer that, but I think these look better. We can reference meta's MusicGEN paper for the Chroma cosine similarity metric, to save writing out the calc.}
+}
+\label{tab:objective_metrics}
+    \resizebox{0.95\textwidth}{!}{
+\begin{tabular}{lccccll}
+\toprule
+Method & MFCC dist. ($\downarrow$) & Chroma sim. ($\uparrow$) & Rhythm corr. ($\uparrow$) & Boundary err. ($\downarrow$) &MusicFM dist. ($\downarrow$)   &CLAP sim. ($\uparrow$)\\
+\midrule
+%Masked                         & $1140.7 \pm 108.8$           & $0.000 \pm 0.000$            & $0.00 \pm 0.00$              & $11.48 \pm 3.13$             &$15.97\pm 1.72$                &$0.770 \pm 0.073 $\\
+Latent-Interp.                  & $135.5 \pm 53.3$             & $0.924 \pm 0.054$            & $0.70 \pm 0.12$              & $ 2.57 \pm 1.69$             &$18.75 \pm 1.76$               &$0.610 \pm 0.116 $\\
+Latent-Sim.                     & $112.1 \pm 64.7$             & $0.934 \pm 0.056$            & $0.70 \pm 0.17$              & $ 2.84 \pm 1.67$             &$17.13 \pm 2.32$               &$\underline{0.842 \pm 0.092} $\\
+RePaint                        & $194.3 \pm 85.7$             & $0.887 \pm 0.078$            & $0.58 \pm 0.18$              & $ 2.82 \pm 1.43$             &$16.18 \pm 1.39$               &$0.626 \pm 0.140 $\\
+DPS                            & $105.6 \pm 41.7$             & $0.928 \pm 0.055$            & $0.72 \pm 0.13$              & $ 1.98 \pm 0.75$             &$15.19 \pm 1.32$               &$0.823 \pm 0.087 $\\
+SimDPS-Solo (proposed)       & $\underline{103.8} \pm 58.2$ & $\underline{0.936} \pm 0.053$& $\underline{0.73} \pm 0.13$     & $\underline{1.72} \pm 0.61$  &$\underline{14.46 \pm 1.33}$               &$0.841 \pm 0.090 $\\
+SimDPS-Multi (proposed)      & $\mathbf{97.8} \pm 50.9$     & $\mathbf{0.942} \pm 0.050$   & $\mathbf{0.75} \pm 0.13$  & $\mathbf{1.70} \pm 0.56$     &$\mathbf{14.42 \pm 1.34}$   &$\mathbf{0.843\pm 0.088}$\\
+\bottomrule
+\end{tabular}
+}
+\end{table*}
+
+\begin{figure*}[!t]
+    \centering
+    %\includegraphics[trim= 33 0 20 0, clip]{all_tracks_fig.pdf}
+    \includegraphics[trim=7 11 6 7 , clip, width=0.9\textwidth]{ISMIR26/all_tracks_fig_latent.pdf}
+    \vspace{-7pt}
+    \caption{Subjective evaluation of latent-space methods on general music. Violin plots show score distributions per example and aggregated across the full dataset.
+    \vspace{-5pt}
+    }
+    
+    \label{fig:violins_latent}
+\end{figure*}
+
+\vspace{-5pt}
+\subsubsection{Objective evaluation}
+\vspace{-3pt}
+
+
+
+%\textcolor{red}{Also the different methods evaluated, and baselines.}
+%We evaluate the proposed method using both objective metrics and subjective listening tests.
+%We conduct an objective evaluation based on feature comparisons against its ground-truth reference.
+%using a set of feature-based metrics.
+
+Although exact recovery is not expected in long-gap inpainting, we argue that successful reconstructions should preserve the structural and stylistic properties of the original musical context.
+We therefore design an objective evaluation, comparing the method reconstructions with the ground-truth references using a set of complementary feature-based metrics that assess different aspects of the reconstruction.
+
+
+For this evaluation, we use 500 excerpts of length 15~s from the test split of MUSDB18-HQ \cite{musdb18-hq}.
+In each excerpt, a 5-s gap is placed at random within the segment's interior.
+For all retrieval-based methods, the source corpus used for similarity search consists of the remainder of the same song outside the masked interval.
+
+We compare six reconstruction conditions.
+\textit{Latent-Interp} performs linear interpolation in the latent space and serves as a low anchor.
+\textit{Latent-Sim} directly inserts the highest-scoring retrieved latent segment into the gap.
+\textit{DPS} denotes unguided diffusion-based inpainting at inference time, following \cite{moliner_diffusion-based_2024}.
+We further evaluate the two variants of the proposed method introduced in Sec.~\ref{sec:sim}: \textit{SimDPS-Solo}, which uses the single best-matching candidate, and \textit{SimDPS-Multi}, which combines guidance from multiple high-scoring candidates.
+Finally, for completeness, we include the supervised inpainting module provided in the ACE-Step codebase, denoted \textit{RePaint} as inspired by an image inpainting method ~\cite{lugmayr2022repaint}.
+Although this baseline did not produce satisfactory qualitative results in our setting, we retain it as an additional comparison point.
+
+
+We report six complementary reference-based metrics. 
+\emph{MFCC distance} measures timbral consistency as perceptually-motivated spectral features. \emph{Rhythm correlation} is defined as the cross correlation between onset strength envelopes and captures coarse rhythmic agreement.
+\emph{Chroma cosine similarity}  \cite{copet2023simple} evaluates harmonic agreement while being relatively insensitive to fine timbral variation .
+These three metrics compare only the audio content within the reconstructed gap. 
+
+To assess how well the reconstructed segment connects to the surrounding audio, we additionally compute a \emph{boundary error}, defined as the log-spectral distance to the reference in short analysis windows centred at the gap boundaries. Finally, we include two embedding-based distances computed on the full excerpt rather than on the gap. \emph{CLAP cosine similarity} provides a coarse measure of semantic similarity, whereas \emph{MusicFM Euclidean distance} measures discrepancy in a representation space shown to capture higher-level musical structure \cite{won2024foundation,toyama2025foundational}. Using the full excerpt is important for these embedding metrics because the representations are more informative when both the reconstructed region and its surrounding context are available. 
+%Lower values indicate better performance for all distance-based metrics, whereas higher values indicate better performance for rhythm correlation and chroma cosine similarity.
+
+
+The results of the objective evaluation are displayed in Table \ref{tab:objective_metrics}. 
+%\textit{Masked} and the low-anchor \textit{Latent-Interp} methods are shown for comparison.
+The \textit{RePaint} method performs notably poorly across each metric, as indicated during testing.
+\textit{SimDPS-Multi} achieves the greatest score across all metrics reported.
+%than the \textit{Latent-Sim} method. 
+%This may be attributed to its aggregation of slow-moving features over full-spectrum latent guidance (via \textit{SimDPS-Solo}'s temporal $l_2$ loss).
+\textit{SimDPS-Multi} also achieves a notably better MFCC distance than each of the other diffusion methods, suggesting a benefit to multi-candidate guidance. 
+There is notable variance in the results of both \textit{Latent-Sim} and \textit{DPS} across metrics.
+In particular, \textit{Latent-Sim} performs poorly on the Boundary Error and MusicFM embedding, with a markedly higher standard deviation than all other methods. This is an example of the weakness of deterministic Similarity methods, in cases where the best match available is still poor.
+\textit{DPS} performs comparatively well here with the lowest standard deviation, yet receives a poorer result on Chroma cosine similarity, CLAP and Rhythm correlation than \textit{Sim}; indicating---on average---the context adherence issues that can arise with unguided long-gap DPS inpainting. The proposed \textit{SimDPS} methods perform consistently across each baseline, demonstrating the benefit to combine traditional similarity corpus search with probabilistic generative methods.
+
+
+
+
+%\textcolor{red}{Table~\ref{tab:objective_metrics} provides the current draft placeholder for the objective evaluation in the latent-domain setting. The accompanying discussion will be added once the final experimental protocol and baselines are fixed.}
+% Please add the following required packages to your document preamble:
+% \usepackage{graphicx}
+
+% Please add the following required packages to your document preamble:
+% \usepackage{graphicx}
+
+
+
+\vspace{-5pt}
+\subsubsection{Subjective evaluation} \label{sec:subjective_latent}
+\vspace{-3pt}
+
+
+
+The same set of conditions is also evaluated in a subjective listening test.
+We adopt a multi-stimulus listening test in which listeners assess the perceptual plausibility of the reconstructions.
+The test was implemented with webMUSHRA \cite{schoeffler2018webmushra}.
+Six musical excerpts of varying genres are selected from songs in the MUSDB18-HQ \cite{musdb18-hq} test split. %and each excerpt is presented twice in separate trials.
+In each trial, the masked excerpt is provided as a reference for the surrounding musical context. Listeners are asked to evaluate the six reconstruction conditions according to how plausible they sound amongst the context.
+A total of 23 volunteers participated in the study.
+
+%\subsubsection{Subjective test}
+%\begin{figure*}[t]
+%    \centering
+%    %\includegraphics[trim= 33 0 20 0, clip]{all_tracks_fig.pdf}
+%    \includegraphics[trim=7 11 6 7 , clip, width=\textwidth]{ISMIR26/all_tracks_fig_latent.pdf}
+%    \caption{
+%(top) Boxplots of listening test scores, per example and aggregated across all songs, showing the superiority of the proposed \textit{SimDPS-l} method.  
+%(bottom) Tables of p-values from Wilcoxon signed-rank tests; blue cells (p$<0.05$) indicate statistically significant differences.}
+    
+%    \label{fig:boxplots}
+%\end{figure*}
+
+\begin{figure*}[t!]
+    \centering
+    %\includegraphics[trim= 33 0 20 0, clip]{all_tracks_fig.pdf}
+    \includegraphics[trim=7 11 6 7 , clip, width=0.9\textwidth]{ISMIR26/all_tracks_fig_maestro.pdf}
+    \vspace{-5pt}
+    \caption{Subjective evaluation of waveform-domain methods on piano music. Violin plots show score distributions per example and aggregated across the full dataset.
+    \vspace{-5pt}
+    }
+    
+    \label{fig:boxplots}
+\end{figure*}
+
+Figure \ref{fig:violins_latent} shows the results of the listening experiment.
+All participants generally identified both the reference and anchor.
+%rating them as 100 and 0, respectively, as requested in the instructions.
+The experiment confirms the same broad trend observed in the objective evaluation: \textit{SimDPS} is generally preferred over the \textit{DPS} and \textit{RePaint} baselines, while more nuanced patterns emerge when comparing the two versions of \textit{SimDPS} with \textit{Latent-Sim}.
+
+
+The responses are strongly example-dependent and, in particular, depend on the quality of the retrieved similarity match.
+For excerpts where the best match is already highly coherent, such as \textit{Electro-Rock} and \textit{Metal}, the \textit{Latent-Sim} baseline performs very well and leaves limited room for further improvement. In these cases, \textit{SimDPS-Solo} remains close to \textit{Latent-Sim} and does not noticeably degrade performance, whereas \textit{SimDPS-Multi} can be detrimental. By contrast, when the retrieved match is weaker, \textit{SimDPS-Multi} becomes more advantageous: in \textit{Reggae} and \textit{Pop}, \textit{SimDPS-Multi} can demonstrate robustness to a poorly-rated similarity match by providing significant improvements over \textit{Latent-Sim}   ($p < 0.01$ and $p = 0.02$, respectively\footnote{All $p$-values reported are derived from pairwise comparisons using a Wilcoxon signed-rank test.}), while in \textit{Folk} the improvement is more marginal ($p=0.12$).
+\textit{Country}, however, is an exception to this trend, as \textit{SimDPS-Multi} achieves an equivalent score to the unguided \textit{DPS} baseline, improved upon by \textit{SimDPS-Solo}.
+
+%\textcolor{red}{Corresponding p-values should be reported here.}
+
+
+
+
+%Exceptions occur, like in the \textit{Country}.
+%More interesting things can we learned when comparing both \textit{SimDPS} versions with \textit{Latent-Sim.}
+
+
+%\textcolor{red}{
+%Overall, these results suggest that \textit{SimDPS-Solo} is the safer option when a strong single match is available, whereas \textit{SimDPS-Multi} is better suited to cases where several imperfect candidates must be combined to recover a plausible continuation.}
+
+\vspace{-5pt}
+\subsection{Waveform Diffusion on Piano}
+\vspace{-3pt}
+
+
+
+As an additional evaluation, we employ a waveform-domain diffusion model trained on piano recordings to determine whether our guidance scheme is also compatible with waveform-domain priors.
+%suitable in scenarios where high-fidelity audio is of great importance.
+%\textcolor{red}{[mention why a waveform domain model is still interesting, no autoencoder artifacts]}
+%Models that operate directly in the waveform-domain preserve absolute time-domain information, avoiding autoencoder artifacts inherent to compressed latent representations. Their adoption is suitable to scenarios where (high-fidelity audio)/(audio consistency) is of a greater importance than sample variance.
+
+%\vspace{-5pt}
+%\subsubsection{Model setup}
+%\vspace{-3pt}
+
+For the backbone score model $s_\theta$, we use a waveform-domain diffusion model with the MR-CQTdiff architecture  \cite{dacosta2025mrcqtdiff}.
+%, which uses a Constant-Q Transform (CQT) designed for music signals.
+%Since the CQT is invertible, the diffusion process is defined directly in the waveform domain. 
+%providing flexible, high-fidelity audio generation.
+%Unlike latent diffusion approaches \cite{evans_stable_2024}, which often compromise acoustic quality, we prioritise generating audio suitable for direct insertion into music tracks without noticeable artifacts.
+The model is trained on the MAESTRO dataset \cite{hawthorne_enabling_2019} using mono recordings at 44.1\,kHz and training segments of 6\,s. 
+%the model being convolutional can generalize to longer sequences. 
+Initial training was performed on the full train split for 180k iterations, followed by 320k iterations on recordings from 2017–2018, which have superior acoustic quality.
+%Total training time was approximately two days on a single NVIDIA H200 GPU.
+
+To sample from the diffusion model, we discretise the time $\{\tau_i\}_{i=1}^T$ into $T=50$ steps. 
+We set a maximum $\tau_T=8$ and a minimum $\tau_1=e^{-5}$, using
+a logarithmic discretization schedule.
+ We employ the second-order stochastic sampler proposed by Karras et al.~\cite{karras2022elucidating},
+ setting the stochasticity parameter $S_{\mathrm{churn}}=10$. 
+%which emphasises precision in the trajectory regions of low signal-to-noise ratio (SNR), where high-frequency detail is determined. 
+
+%The discretised step schedule also follows
+%is given by 
+%\begin{align}
+%    \tau_i &= \left( \sigma_{T-1}^{\frac{1}{\rho}} + \frac{i}{T-1} \left( \sigma_{0}^{\frac{1}{\rho}} - \sigma_{T-1}^{\frac{1}{\rho}} \right) \right)^{\rho} \, , & \tau_0 &= 0 \, ,
+%\end{align}
+%where $\rho$ is a hyperparameter that determines the distribution of steps in relation to the maximum, or minimum, noise level. We set  $\rho=10$, emphasising precision in the trajectory regions of low signal-to-noise ratio (SNR), where high-frequency detail is determined. 
+%Although the probability flow ODE \eqref{eq:probflow} describes a deterministic trajectory, previous studies \cite{song_score-based_2021, cao_exploring_2023, karras2022elucidating} demonstrate that a stochastic solver can exhibit benefits in sample quality, effectively smoothing over errors made in prior discretisation steps.
+%We found that injecting stochasticity was beneficial in our experiments, thus 
+
+We observe that the hyperparameter $\omega_{\tilde{x}}$, which modulates the strength of the similarity-based guidance, is critical to waveform inpainting performance. To evaluate this impact, we define two configurations of our method: \textit{SimDPS-Strict} ($\omega_{\tilde{X}} = 0.15$) and \textit{SimDPS-Relaxed} ($\omega_{\tilde{X}} = 0.04$). For both versions, the reconstruction weighting is held constant at $\omega_Y = 0.3$. 
+Notably, the multiple candidate configuration \textit{SimDPS-Multi} is omitted from this experiment because initial testing indicated it was ineffective at generating adequate samples in this context.
+
+%We observe that the hyperparameter $\omega_{\tilde{x}}$, which controls the strength of the similarity-based guidance, has a critical impact on inpainting performance, we thus evaluate two versions of SimDPS differing with this paramter.
+%We denote our method with high and low similarity guidance as SimDPS-Strict ($\omega_{\tilde{X}} = 0.15$) and SimDPS-Relaxed ($\omega_{\tilde{X}} = 0.04$), respectively. 
+%Setting $\omega_{\tilde{x}} = 0$ recovers the standard Diffusion Posterior Sampling (DPS) inpainting method \cite{moliner2023solving, moliner_diffusion-based_2024}. 
+%In all cases, the reconstruction weighting is fixed at $\omega_Y = 0.3$.
+
+
+
+%As noted by recent studies into spectral analysis and the dynamical regimes of diffusion models \cite{biroli_dynamical_2024}, diffusion models generate low-frequency content in the early stages of the reverse process, with high-frequency detail occurring in the final regime.
+
+%\subsubsection{Similarity search}
+
+To perform the feature-based similarity search, the audio signals are resampled to $12$\,kHz, improving search efficiency. % whilst retaining perceptually-relevant frequencies.
+%most commonly associated with auditory perception.   
+%The similarity search was conducted on a source corpus, $\mathcal{S}$, of two separated parts: the complete music track before the gap, and the complete music track after the gap.
+The source corpus $\mathcal{S}$ comprises the complete segments of the music track preceding and following the gap. 
+%\textemdash ensuring no feature calculations contain any of the degraded signal. 
+%The maximum context length,  was set to the equivalent of 0.75\,s for 
+We selected two search features: the STFT (0.75\,s context) to maintain short-range consistency and a chromagram (5.0\,s context) to capture long-range musical coherence \cite{muller_music_2021}.
+%We selected as search features the STFT for short-range consistency with a context length of $0.75$s, and $5.0$s for a longer-range chromagram to capture musical coherence \cite{muller_music_2021}.  
+For both features, we used a Hann window of length 1024 and hop size 256.
+%and hop length of 256, and window length and FFT size set to 1024 for the STFT calculation.
+This allowed an efficient joint frame pre-processing.
+%The STFT features act as a short-range timbral similarity through a vector $\mathbf{w}_1$ ramped linearly to zero from 0 s to 0.75 s. In contrast, the long-range chromagram assesses the rhythmic and melodic contents across the full context duration, with $\mathbf{w}_1$ ramping linearly. 
+%The feature hyperparameters, $\alpha_1$ and $\alpha_2$, are set to $1.0$.
+
+
+
+%Aiming to align with musical plausibility,
+%We used the STFT and Chromagram \cite{muller_music_2021} features, represented by the feature sets, $\{\Phi_1, d_1,  \alpha_1\}$ and $\{\Phi_2, d_2, \alpha_2\}$ respectively.
+%For both features, we used a Hann window and hop length of 256, and window length and FFT size set to 1024 for the STFT calculation.
+%This allowed an efficient joint frame pre-processing. Each distance metric is the weighted Euclidean distance, $d_k = \sqrt{\sum_{j=1}^M w_j (x_j - y_j)^2}$, with weighting vectors $\mathbf{w}_k = (w_1, w_2,...w_M)$ acting as ramped heterogeneous context duration terms that provide greater weighting to frames closer to the mask boundary.
+%The STFT features act as a short-range timbral similarity through a vector $\mathbf{w}_1$ ramped linearly to zero from 0 s to 0.75 s. In contrast, the long-range chromagram assesses the rhythmic and melodic contents across the full context duration, with $\mathbf{w}_1$ ramping linearly. The feature hyperparameters, $\alpha_1$ and $\alpha_2$, are set to $1.0$.
+
+
+%The optimal inpaint sample start, $t^*$, is used to select the inverse mask approximation, $\mathbf{\tilde{x}}$, used for similarity-guided diffusion inference.
+
+%All waveform-domain experiments use 6-s piano signals with 2-s gaps. For similarity search, we use the remainder of each music track as the source corpus, thereby exploiting within-track repetitions common in piano music.
+
+
+
+\vspace{-5pt}
+\subsubsection{Subjective evaluation}
+\vspace{-3pt}
+
+We conduct a listening test following the same protocol as described in Sec.~\ref{sec:subjective_latent}. In this case, each trial featured a 6-s piano excerpt with a 2-s central gap, where participants compared the original reference against five reconstruction methods. Although 17 volunteers participated, one was excluded from the final analysis due to unreliable responses.
+
+Among the evaluated methods, Linear Predictive Coding (\textit{LPC}) \cite{kauppinen_audio_2002} served as a low anchor, as it is generally unsuitable for gaps of this duration.
+The \textit{Sim} method directly copies the similarity match, adhering to the original method \cite{perraudin_inpainting_2018}.
+%however, we applied a 10-ms cross-fade at the mask boundaries to suppress audible clicks.
+We also included \textit{DPS}, which refers to the method by \cite{moliner_diffusion-based_2024}, alongside two variants of our proposed approach, \textit{SimDPS-Relaxed} and \textit{SimDPS-Strict}.
+
+
+
+
+
+%This was required as
+%We have not identified suitable objective metrics for our task \cite{moliner_diffusion-based_2024}. Pairwise measures are not applicable due to the highly ill-posed nature of the problem, while distributional measures mainly capture acoustic fidelity rather than musical content consistency.
+
+The listening test results,  shown in Figure~\ref{fig:boxplots}, indicate similar patterns as in the latent case. 
+ Across all excerpts, the reference (\textit{Original}) was consistently rated Excellent, while the anchor (\textit{LPC}) remained in the Poor range.
+
+ We analyse ratings on a per-excerpt basis.
+The similarity baseline (\textit{Sim}) is a useful proxy for match quality. When the retrieved segment was highly coherent, as in \textit{Piano-1}, \textit{SimDPS-Strict} matched \textit{Sim}; when the match was only moderate, it improved on \textit{Sim}, significantly for \textit{Piano-2} and \textit{Piano-3} (both p = 0.02) and marginally, while not statistically significant, for \textit{Piano-4} (p = 0.2).
+This shows that employing a diffusion model can improve upon moderately fitting matches.
+When the retrieved match was poor, however, \textit{SimDPS-Strict} offered no consistent advantage.
+
+The unguided \textit{DPS} condition was generally rated low, underscoring the importance of guidance, while \textit{SimDPS-Relaxed} usually improved on \textit{DPS} but remained below or equal to \textit{Sim}. \textit{Piano-6} was the main exception, where \textit{DPS} and \textit{SimDPS-Relaxed} outscored both \textit{Sim} and \textit{SimDPS-Strict}, although all methods still received low ratings. Overall, \textit{SimDPS-Strict} achieved the highest mean score.
+
+
+
+
+
+
+
+%There is also a strong dependency of reconstruction quality on the individual examples, so we analyse the ratings on a per-excerpt basis.
+%Given the wide distributions of ratings—reflecting both the multi-stimulus test design and the inherently high subjectivity of musical plausibility—it is important to focus on statistical differences between methods rather than absolute scores.
+%Across all excerpts, the reference signals (\textit{Original}) were consistently rated as Excellent, while the anchor (\textit{LPC}) was consistently placed in the Poor range.
+%confirming its inadequacy as a low anchor for long gaps.
+%The scores of the similarity-based condition (\textit{Sim}) provide a useful indicator of how well a musically coherent match could be found in each case. For excerpt \textit{Piano-1}, the \textit{Sim} condition reached Excellent ratings, and \textit{SimDPS-Strict} achieved an equivalent distribution of scores, suggesting that when the retrieved match is highly coherent, our diffusion-based approach can preserve its quality.
+%For excerpt \textit{Piano-2}, \textit{Sim} was rated in the Good range, but \textit{SimDPS-Strict} obtained significantly higher ratings (p = 0.02), showing that the diffusion process can improve upon moderately fitting matches. 
+%In excerpts \textit{Piano-3} and \textit{Piano-4}, where \textit{Sim} was only rated Fair, \textit{SimDPS-Strict} again outperformed it: significantly in \textit{Piano-3} (p = 0.02) and marginally in \textit{Piano-4} (p = 0.2). By contrast, for excerpts where \textit{Sim} was close to the Poor range, no consistent benefit of \textit{SimDPS-Strict} was observed, and both conditions yielded similar score distributions.
+
+%The unguided \textit{DPS} condition  was generally rated in the lower part of the scale, highlighting the importance of guidance for plausibility. The low guidance version, \textit{SimDPS-Relaxed}, often outperformed \textit{DPS} but remained below or equal to \textit{Sim} in most cases. 
+%An exception occurred in excerpt \textit{Piano-6}, where \textit{DPS} and \textit{SimDPS-Relaxed} were rated higher than both \textit{Sim} and \textit{SimDPS-Strict}, although all methods remained in the lower part of the scale. Across the full range of match quality found through the similarity search, the proposed \textit{SimDPS-Strict} method achieves the highest mean plausibility score.
+
+
+
+%Participants may also have penalized subtle generative artifacts introduced by the diffusion model, even though these were not perceived as dominant in the listening experience.
+
+
+
+
+
+
+
+
+
+%This was required as
+%We have not identified suitable objective metrics for our task \cite{moliner_diffusion-based_2024}. Pairwise measures are not applicable due to the highly ill-posed nature of the problem, while distributional measures mainly capture acoustic fidelity rather than musical content consistency.
+
+
+
+
+\vspace{-3pt}
+\section{Conclusions}
+\vspace{-2pt}
+
+%We proposed a music inpainting method capable of reconstructing long gaps that combines a similarity search procedure with a generative diffusion model. 
+%This hybrid approach, called SimDPS, uses an auxiliary signal as a guide, designing a non-uniform posterior covariance matrix to direct samples toward plausible solutions that align with the surrounding context. We apply the method using both latent and waveform domain models, and develop a multi-candidate variant, \textit{SimDPS-Multi}, for the latent domain. SimDPS applied to a pre-trained, open-source latent diffusion model achieved the greatest score across all reported objective metrics, demonstrating inference improvements over unguided inpainting without requiring any additional fine-tuning or decoder passes. 
+%Subjective evaluations on both latent and waveform models demonstrate
+%Results show that \textit{SimDPS-Multi},  generate samples 
+%that SimDPS can significantly improve on the perceptual plausibility of unguided diffusion-based inpainting across multiple genres, and frequently outperforms a similarity search method alone, for moderately-similar candidates. The main limitation in our approach is the generation variability across samples, and designing a successful multi-candidate waveform-method warrants further investigation.   
+
+%We proposed SimDPS, a hybrid music inpainting method for reconstructing long gaps that combines similarity search with a generative diffusion model. 
+This paper introduces SimDPS, a training-free and model-agnostic framework for long-gap music inpainting that combines similarity retrieval with diffusion posterior sampling. 
+Using an auxiliary guide, it applies a non-uniform posterior covariance matrix to direct samples toward plausible, context-aligned solutions. 
+SimDPS operates in both latent and waveform domains, and in latent space can additionally exploit multiple high-scoring candidates through \textit{SimDPS-Multi}. 
+%We apply this to latent and waveform models, developing a latent multi-candidate variant, \textit{SimDPS-Multi}. 
+Using an open-source latent diffusion model, SimDPS achieved the highest objective scores, improving upon unguided inpainting and pure similarity search without any model fine-tuning or decoder passes.
+Subjective evaluations show that SimDPS significantly enhances perceptual plausibility, frequently outperforming standalone similarity
+search in cases where retrieval candidates are suboptimal.
+Variable success across samples is the main limitation, and studies into creative inference applications over varied corpora warrant further investigation.
+
+%These results show that similarity-guided posterior sampling is a practical and effective strategy for long-gap music restoration and context-aware audio editing. Performance remains example-dependent, especially when retrieved candidates are weak, motivating future work on robustness to poor matches and stronger multi-candidate guidance in the waveform domain.
+
+
+%By incorporating retrieved segments as auxiliary guidance in a modified likelihood, the method steers generation toward reconstructions that better preserve musical context while retaining the flexibility of pre-trained generative models. 
+
+\newpage
+
+\section{Acknowledgment}
+This work was supported by Nokia Solutions and Networks, the Research Council of Finland (Grant no.~371845, REMUS---Restoring Music Recordings Using Generative Models), and the HUCE infrastructure of the Aalto School of Electrical Engineering. We acknowledge the computational resources from Aalto University “Science-IT” project. 
+We thank the volunteers who participated in the listening tests.
+
+%\section{AI Usage Statement}
+
+%\section{Ethics Statement}
+
+
+
+% For BibTeX users:
+\bibliography{ISMIRtemplate}
+
+% For non BibTeX users:
+%\begin{thebibliography}{citations}
+% \bibitem{Author:17}
+% E.~Author and B.~Authour, ``The title of the conference paper,'' in {\em Proc.
+% of the Int. Society for Music Information Retrieval Conf.}, (Suzhou, China),
+% pp.~111--117, 2017.
+%
+% \bibitem{Someone:10}
+% A.~Someone, B.~Someone, and C.~Someone, ``The title of the journal paper,''
+%  {\em Journal of New Music Research}, vol.~A, pp.~111--222, September 2010.
+%
+% \bibitem{Person:20}
+% O.~Person, {\em Title of the Book}.
+% \newblock Montr\'{e}al, Canada: McGill-Queen's University Press, 2021.
+%
+% \bibitem{Person:09}
+% F.~Person and S.~Person, ``Title of a chapter this book,'' in {\em A Book
+% Containing Delightful Chapters} (A.~G. Editor, ed.), pp.~58--102, Tokyo,
+% Japan: The Publisher, 2009.
+%
+%\end{thebibliography}
+
+\end{document}

@@ -1,0 +1,80 @@
+/* Audio demo panels: excerpt selector + a trackswitch.js player. */
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.demo-panel {
+  margin-top: 1.25rem;
+}
+
+/* Excerpt selector: plain text, no pills. */
+
+.demo-selector {
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+  line-height: 1.9;
+}
+
+.demo-selector .demo-label {
+  color: var(--text-muted);
+  margin-right: 0.35rem;
+}
+
+.demo-chip {
+  font: inherit;
+  padding: 0 0.3rem;
+  border: 0;
+  background: none;
+  color: var(--link);
+  cursor: pointer;
+}
+
+.demo-chip:hover {
+  text-decoration: underline;
+}
+
+.demo-chip.is-active {
+  color: var(--text);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.demo-chip:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 1px;
+}
+
+/* Player and captions */
+
+.demo-caption {
+  margin-bottom: 0.6rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.demo-caption .demo-missing {
+  font-style: italic;
+}
+
+.demo-player {
+  min-height: 16rem;
+}
+
+.ts-host {
+  display: block;
+  width: 100%;
+}
+
+.demo-error {
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--rule);
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+@media screen and (max-width: 640px) {
+  .demo-player {
+    min-height: 13rem;
+  }
+}

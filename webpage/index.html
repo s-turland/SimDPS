@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="description" content="SimDPS combines self-similarity retrieval with diffusion posterior sampling to reconstruct multi-second gaps in music recordings. Training-free and model-agnostic, in the waveform and latent domains.">
+  <meta name="keywords" content="audio inpainting, music inpainting, diffusion posterior sampling, latent diffusion, similarity search, music restoration, ISMIR">
+  <meta name="author" content="Sean Turland, Eloi Moliner, Vesa Välimäki">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Aalto Acoustics Lab">
+  <meta property="og:title" content="Music Inpainting with Similarity-Guided Latent Diffusion">
+  <meta property="og:description" content="SimDPS combines self-similarity retrieval with diffusion posterior sampling to reconstruct multi-second gaps in music recordings.">
+
+  <meta name="citation_title" content="Music Inpainting with Similarity-Guided Latent Diffusion">
+  <meta name="citation_author" content="Turland, Sean">
+  <meta name="citation_author" content="Moliner, Eloi">
+  <meta name="citation_author" content="Välimäki, Vesa">
+  <meta name="citation_publication_date" content="2026">
+  <meta name="citation_conference_title" content="International Society for Music Information Retrieval Conference (ISMIR)">
+
+  <title>Music Inpainting with Similarity-Guided Latent Diffusion</title>
+
+  <link rel="icon" type="image/x-icon" href="static/images/favicon.ico">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="static/css/bulma.min.css">
+  <link rel="stylesheet" href="static/css/index.css">
+  <link rel="stylesheet" href="static/css/demo.css">
+
+  <!-- trackswitch.js must be parsed before demo.js, which mounts the players. -->
+  <script defer src="static/js/trackswitch.js"></script>
+  <script defer src="static/js/index.js"></script>
+  <script defer src="static/js/demo.js"></script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ScholarlyArticle",
+    "headline": "Music Inpainting with Similarity-Guided Latent Diffusion",
+    "author": [
+      { "@type": "Person", "name": "Sean Turland" },
+      { "@type": "Person", "name": "Eloi Moliner" },
+      { "@type": "Person", "name": "Vesa Välimäki" }
+    ],
+    "datePublished": "2026",
+    "publisher": {
+      "@type": "Organization",
+      "name": "International Society for Music Information Retrieval Conference (ISMIR)"
+    },
+    "isAccessibleForFree": true
+  }
+  </script>
+</head>
+<body>
+
+  <main id="main-content">
+
+  <!-- Title -->
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop has-text-centered">
+        <h1 class="title is-1 publication-title">Music Inpainting with Similarity-Guided Latent Diffusion</h1>
+
+        <p class="publication-authors">
+          <span class="author-block">Sean Turland<sup>1,2</sup>,</span>
+          <span class="author-block">Eloi Moliner<sup>1</sup>,</span>
+          <span class="author-block">Vesa Välimäki<sup>1</sup></span>
+        </p>
+
+        <p class="affiliations">
+          <sup>1</sup>Acoustics Lab, Dept. of Information and Communications Engineering, Aalto University, Finland<br>
+          <sup>2</sup>Acoustics and Audio Group, University of Edinburgh, United Kingdom
+        </p>
+
+        <p class="venue"> Proc. of the 27th Int. Society for Music Information Retrieval Conf. (ISMIR), Abu Dhabi, UAE, 2026</p>
+
+        <p class="publication-links">
+          <!-- TODO: point at the arXiv / camera-ready PDF once it is online -->
+          <a href="https://github.com/s-turland/SimDPS">Paper (Coming Soon)</a>
+          <!-- TODO: point at the public code release -->
+          <a href="https://github.com/s-turland/SimDPS">Code (Coming Soon)</a>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Method diagram -->
+  <section class="section" id="teaser">
+    <div class="container is-max-desktop">
+      <figure class="teaser-figure">
+        <img src="static/images/LatentSimDPS-diagram.png"
+             alt="Block diagram of SimDPS. A similarity search over the source corpus S turns the
+                  observation Y into a retrieved guide X-tilde. The likelihood score from Y, an
+                  auxiliary likelihood score from X-tilde, and the prior score model are summed to
+                  form the update applied at each step of the reverse diffusion process, from noise
+                  X_T down to the reconstruction X_0.">
+        <figcaption></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- Abstract -->
+  <section class="section is-band">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3">Abstract</h2>
+          <div class="content has-text-justified">
+            <p>
+              We propose a music inpainting technique combining similarity matching and a
+              diffusion-based generative model to replace large segments of audio recordings with
+              suitable alternatives. The proposed hybrid method, Similarity-Guided Diffusion
+              Posterior Sampling (SimDPS), retrieves candidate replacement segments from the wider
+              signal based on contextual similarity and uses them to guide the diffusion process
+              toward coherent reconstructions. Being model-agnostic, the framework is compatible
+              with any pre-trained diffusion model operating in either the waveform or latent
+              domain. Objective evaluations demonstrate that SimDPS outperforms widely adopted
+              RePaint and DPS methods across acoustic features and neural-embedding distance
+              metrics. Subjective evaluations on multi-genre music datasets confirm that SimDPS
+              enhances perceptual plausibility compared to previous diffusion-based methods and
+              demonstrates robustness to poorly matched similarity candidates. These findings pave
+              the way for improved music restoration and context-aware audio editing.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Listening test 1 -->
+  <section class="section is-band" id="listening-test-latent">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3">Listening Test &mdash; Diffusion-based Latent Inpainting on General Music</h2>
+      <div class="content has-text-justified">
+        <p>
+          Six excerpts of varying genre were taken from the MUSDB18-HQ test split and assessed by
+          23 listeners in a multi-stimulus test using webMUSHRA. The masked excerpt was
+          given as the reference for the surrounding musical context, and listeners rated how
+          plausible each reconstruction sounded within that context. Excerpts are 15&nbsp;s long
+          with a 5-s gap; the stimuli below are the files used in the test.
+        </p>
+        <p>
+          Audio is fetched on the first click. All conditions share a single transport, so
+          switching between them does not interrupt playback.
+        </p>
+      </div>
+
+      <div class="demo-panel">
+        <div class="demo-selector">
+          <span class="demo-label">Excerpt:</span>
+          <span id="test-latent-chips" role="group" aria-label="Select a listening-test excerpt"></span>
+        </div>
+        <div class="demo-player" id="test-latent-player">
+          <noscript><p class="demo-error">JavaScript is required to load the audio examples.</p></noscript>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Listening test 2 -->
+  <section class="section" id="listening-test-piano">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3">Listening Test &mdash; Diffusion-based Audio Inpainting on Piano</h2>
+      <div class="content has-text-justified">
+        <p>
+          The protocol was repeated with a waveform-domain prior, an MR-CQTdiff model trained on
+          MAESTRO at 44.1&nbsp;kHz. Each 6-s piano excerpt contains a 2-s central gap, and Linear
+          Predictive Coding (LPC) serves as the low anchor. SimDPS-Strict and SimDPS-Relaxed
+          differ in their guidance strength.
+          <span class="nowrap">&omega;<sub>X&#771;</sub></span>, 0.15 and 0.04 respectively.
+        </p>
+      </div>
+
+      <div class="demo-panel">
+        <div class="demo-selector">
+          <span class="demo-label">Excerpt:</span>
+          <span id="test-piano-chips" role="group" aria-label="Select a piano excerpt"></span>
+        </div>
+        <div class="demo-player" id="test-piano-player">
+          <noscript><p class="demo-error">JavaScript is required to load the audio examples.</p></noscript>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Further audio examples -->
+  <section class="section is-band" id="audio-examples">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3">Further Audio Examples</h2>
+      <div class="content has-text-justified">
+        <p>
+          Additional latent-domain reconstructions of 15-s MUSDB18-HQ excerpts, each with a 5-s gap
+          placed at random within the interior of the segment. Retrieval is restricted to the
+          remainder of the same song, outside the masked interval. All conditions use the ACE-Step
+          autoencoder, run without prompts or other conditioning inputs.
+        </p>
+      </div>
+
+      <div class="demo-panel">
+        <div class="demo-selector">
+          <span class="demo-label">Excerpt:</span>
+          <span id="examples-chips" role="group" aria-label="Select an excerpt"></span>
+        </div>
+        <p class="demo-caption" id="examples-caption"></p>
+        <div class="demo-player" id="examples-player">
+          <noscript><p class="demo-error">JavaScript is required to load the audio examples.</p></noscript>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BibTeX -->
+  <section class="section" id="BibTeX">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3">BibTeX</h2>
+      <div class="bibtex-actions">
+        <button class="copy-bibtex-btn" onclick="copyBibTeX()" title="Copy BibTeX to clipboard">
+          <span class="copy-text">Copy</span>
+        </button>
+      </div>
+      <pre id="bibtex-code"><code>@inproceedings{turland2026simdps,
+  title     = {Music Inpainting with Similarity-Guided Latent Diffusion},
+  author    = {Turland, Sean and Moliner, Eloi and V{\"a}lim{\"a}ki, Vesa},
+  booktitle = {Proc. of the Int. Society for Music Information Retrieval Conf. (ISMIR)},
+  year      = {2026}
+}</code></pre>
+    </div>
+  </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="container is-max-desktop">
+      <p>
+        This work was supported by Nokia Solutions and Networks, the Research Council of Finland
+        (Grant no.&nbsp;371845, REMUS &mdash; Restoring Music Recordings Using Generative Models),
+        and the HUCE infrastructure of the Aalto School of Electrical Engineering. We acknowledge
+        the computational resources provided by the Aalto University &ldquo;Science-IT&rdquo; project.
+      </p>
+      <p>
+        Audio playback uses <a href="https://audiolabs.github.io/trackswitch.js/" target="_blank" rel="noopener">trackswitch.js</a>.
+        This page was built using the <a href="https://github.com/eliahuhorwitz/Academic-project-page-template" target="_blank" rel="noopener">Academic Project Page Template</a>,
+        adopted from the <a href="https://nerfies.github.io" target="_blank" rel="noopener">Nerfies</a> project page.
+        This website is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative Commons Attribution-ShareAlike 4.0 International License</a>.
+      </p>
+    </div>
+  </footer>
+
+</body>
+</html>

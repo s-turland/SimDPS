@@ -1,0 +1,278 @@
+/* SimDPS project page.
+   Typography, section headers and the centred abstract column follow the
+   original Academic Project Page Template; the decorative chrome it shipped
+   with (cards, shadows, gradients, hover transforms, page animation, tinted
+   section bands) is not reinstated. */
+
+:root {
+  --primary-color: #2563eb;
+  --primary-hover: #1d4ed8;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-light: #94a3b8;
+  --border-color: #e2e8f0;
+  --background-secondary: #f8fafc;
+  --gradient-accent: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+
+  /* short aliases used by demo.css */
+  --text: var(--text-primary);
+  --text-muted: var(--text-secondary);
+  --link: var(--primary-color);
+  --rule: var(--border-color);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  background: #fff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Section rhythm ----------------------------------------------------------- */
+
+.hero-body {
+  padding: 4rem 1.5rem;
+}
+
+.section {
+  padding: 3rem 1.5rem;
+}
+
+/* Alternating tint. Colour difference only -- no rules, no shadows. */
+.section.is-band {
+  background: var(--background-secondary);
+}
+
+/* Title block -------------------------------------------------------------- */
+
+.publication-title {
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 800 !important;
+  line-height: 1.1 !important;
+  color: var(--text-primary) !important;
+  margin-bottom: 2rem !important;
+}
+
+.publication-authors {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+}
+
+.author-block {
+  display: inline-block;
+  margin-right: 0.35rem;
+}
+
+.affiliations {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.venue {
+  margin-top: 0.9rem;
+  font-size: 0.9rem;
+  color: var(--text-light);
+}
+
+.publication-links {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.75rem;
+}
+
+.publication-links a {
+  display: inline-block;
+  padding: 0.4rem 1.25rem;
+  border: 1px solid var(--text-primary);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 500;
+  background: #fff;
+}
+
+.publication-links a:hover {
+  background: var(--text-primary);
+  color: #fff;
+  text-decoration: none;
+}
+
+/* Method diagram ----------------------------------------------------------- */
+
+/* The hero already supplies the space above; do not double it. */
+#teaser {
+  padding-top: 0;
+}
+
+.teaser-figure {
+  margin: 0;
+  text-align: center;
+}
+
+.teaser-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.teaser-figure figcaption {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+/* Section headers ---------------------------------------------------------- */
+
+.title.is-3 {
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 700 !important;
+  color: var(--text-primary);
+  text-align: center;
+  margin-bottom: 2rem !important;
+  padding-bottom: 1rem;
+  position: relative;
+}
+
+.title.is-3::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--gradient-accent);
+}
+
+/* Body copy ---------------------------------------------------------------- */
+
+.content.has-text-justified {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: var(--text-secondary);
+}
+
+.content.has-text-justified p {
+  margin-bottom: 1.5rem;
+}
+
+.content.has-text-justified p:last-child {
+  margin-bottom: 0;
+}
+
+/* BibTeX ------------------------------------------------------------------- */
+
+.bibtex-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.6rem;
+}
+
+.copy-bibtex-btn {
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 0.2rem 0.7rem;
+  border: 1px solid var(--border-color);
+  background: #fff;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.copy-bibtex-btn:hover {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+}
+
+.copy-bibtex-btn.copied .copy-text::after {
+  content: "ied";
+}
+
+pre {
+  background: #fff !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 0 !important;
+  padding: 1rem 1.1rem !important;
+  font-size: 0.85rem !important;
+  overflow-x: auto;
+}
+
+code {
+  background: transparent !important;
+  color: var(--text-primary) !important;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace !important;
+}
+
+/* Footer ------------------------------------------------------------------- */
+
+.footer {
+  background: var(--background-secondary);
+  padding: 3rem 1.5rem;
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+.footer p {
+  margin-bottom: 0.9rem;
+}
+
+.footer p:last-child {
+  margin-bottom: 0;
+}
+
+/* Small screens ------------------------------------------------------------ */
+
+@media screen and (max-width: 768px) {
+  .hero-body,
+  .section {
+    padding: 2.5rem 1rem;
+  }
+
+  .publication-title {
+    font-size: 2.25rem !important;
+    line-height: 1.2 !important;
+  }
+
+  .publication-authors {
+    font-size: 1rem;
+  }
+
+  .content.has-text-justified {
+    font-size: 1rem;
+    text-align: left;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .publication-title {
+    font-size: 1.9rem !important;
+  }
+}
